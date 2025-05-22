@@ -1,0 +1,27 @@
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: AWSClusterControllerIdentity
+metadata:
+  name: default
+  namespace: cluster-api-system
+spec:
+  allowedNamespaces:
+    selector:
+      matchLabels:
+        cluster.x-k8s.io/ns-type: "managed"
+---
+# Example cross-account role configuration
+# Create one of these for each child account where clusters will be created
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: AWSClusterRoleIdentity
+metadata:
+  name: child-account-1
+  namespace: cluster-api-system
+spec:
+  allowedNamespaces:
+    selector:
+      matchLabels:
+        cluster.x-k8s.io/ns-type: "managed"
+  roleARN: "arn:aws:iam::111111111:role/ClusterAPIProvisionerRole"
+  sourceIdentityRef:
+    kind: AWSClusterControllerIdentity
+    name: default

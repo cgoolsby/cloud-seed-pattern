@@ -1,0 +1,202 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xclusterroles.iam.example.org
+spec:
+  group: iam.example.org
+  names:
+    kind: XClusterRole
+    plural: xclusterroles
+  claimNames:
+    kind: ClusterRole
+    plural: clusterroles
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                accountName:
+                  type: string
+                  description: "The child account name to deploy resources to"
+                  default: "child-account-1"
+                roleName:
+                  type: string
+                  description: "Name of the IAM role"
+                clusterName:
+                  type: string
+                  description: "Name of the cluster this role is for"
+                namespace:
+                  type: string
+                  description: "Kubernetes namespace for the role"
+                  default: "kube-system"
+                serviceAccountName:
+                  type: string
+                  description: "Name of the Kubernetes service account"
+                trustAccounts:
+                  type: array
+                  description: "List of AWS account IDs that can assume this role"
+                  items:
+                    type: string
+              required:
+                - accountName
+                - roleName
+                - clusterName
+                - serviceAccountName
+            status:
+              type: object
+              properties:
+                roleARN:
+                  type: string
+                  description: "ARN of the created IAM role"
+      additionalPrinterColumns:
+        - name: Account
+          type: string
+          jsonPath: .spec.accountName
+        - name: Role
+          type: string
+          jsonPath: .spec.roleName
+        - name: Cluster
+          type: string
+          jsonPath: .spec.clusterName
+        - name: ARN
+          type: string
+          jsonPath: .status.roleARN
+  defaultCompositionRef:
+    name: cluster-service-account-role
+---
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: cluster-service-account-role
+  labels:
+    crossplane.io/xrd: xclusterroles.iam.example.org
+spec:
+  compositeTypeRef:
+    apiVersion: iam.example.org/v1alpha1
+    kind: XClusterRole
+  patchSets:
+    - name: common-parameters
+      patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.accountName
+          toFieldPath: spec.providerConfigRef.name
+  resources:
+    - name: iam-role
+      base:
+        apiVersion: iam.aws.crossplane.io/v1beta1
+        kind: Role
+        metadata:
+          name: composed-cluster-role
+        spec:
+          forProvider:
+            assumeRolePolicyDocument: |
+              {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Federated": "arn:aws:iam::${AWS_ACCOUNT_ID}:oidc-provider/${OIDC_PROVIDER}"
+                    },
+                    "Action": "sts:AssumeRoleWithWebIdentity",
+                    "Condition": {
+                      "StringEquals": {
+                        "${OIDC_PROVIDER}:sub": "system:serviceaccount:${NAMESPACE}:${SERVICEACCOUNT}"
+                      }
+                    }
+                  }
+                ]
+              }
+            tags:
+              - key: Name
+                value: crossplane-role
+              - key: ManagedBy
+                value: crossplane
+          providerConfigRef:
+            name: default
+      patches:
+        - type: PatchSet
+          patchSetName: common-parameters
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.roleName
+          toFieldPath: spec.forProvider.name
+        # Simplified approach - using the base document defined in spec
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.atProvider.arn
+          toFieldPath: status.roleARN
+    
+    - name: iam-policy
+      base:
+        apiVersion: iam.aws.crossplane.io/v1beta1
+        kind: Policy
+        metadata:
+          name: composed-cluster-policy
+        spec:
+          forProvider:
+            document: |
+              {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Action": [
+                      "ec2:DescribeInstances",
+                      "ec2:DescribeRegions",
+                      "ecr:GetAuthorizationToken",
+                      "ecr:BatchCheckLayerAvailability",
+                      "ecr:GetDownloadUrlForLayer",
+                      "ecr:GetRepositoryPolicy",
+                      "ecr:DescribeRepositories",
+                      "ecr:ListImages",
+                      "ecr:BatchGetImage"
+                    ],
+                    "Resource": "*"
+                  }
+                ]
+              }
+            name: composed-cluster-policy
+            tags:
+              - key: Name
+                value: crossplane-policy
+              - key: ManagedBy
+                value: crossplane
+          providerConfigRef:
+            name: default
+      patches:
+        - type: PatchSet
+          patchSetName: common-parameters
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.roleName
+          toFieldPath: spec.forProvider.name
+          # Removed transforms for compatibility
+    
+    - name: iam-role-policy-attachment
+      base:
+        apiVersion: iam.aws.crossplane.io/v1beta1
+        kind: RolePolicyAttachment
+        metadata:
+          name: composed-cluster-role-policy-attachment
+        spec:
+          forProvider:
+            policyArn: ""
+            roleNameRef:
+              name: composed-cluster-role
+          providerConfigRef:
+            name: default
+      patches:
+        - type: PatchSet
+          patchSetName: common-parameters
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.roleName
+          toFieldPath: metadata.name
+          # Removed transforms for compatibility
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.roleName
+          toFieldPath: spec.forProvider.policyArn
+          # Removed transforms for compatibility

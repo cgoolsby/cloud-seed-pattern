@@ -1,0 +1,40 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: cluster-api
+  namespace: cluster-api-system
+spec:
+  interval: 10m
+  url: https://kubernetes-sigs.github.io/cluster-api
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: cluster-api
+  namespace: cluster-api-system
+spec:
+  interval: 15m
+  chart:
+    spec:
+      chart: cluster-api
+      version: "1.6.0"
+      sourceRef:
+        kind: HelmRepository
+        name: cluster-api
+        namespace: cluster-api-system
+  values:
+    manager:
+      featureGates:
+        ClusterTopology: true
+      webhook:
+        port: 9443
+    certManager:
+      enabled: false
+    kubeadmBootstrapController:
+      manager:
+        featureGates:
+          ClusterTopology: true
+    kubeadmControlPlaneController:
+      manager:
+        featureGates:
+          ClusterTopology: true

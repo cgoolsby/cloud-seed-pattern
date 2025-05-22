@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - crossplane-crds.yaml
+  - composite-resource-definitions.yaml
+  - compositions.yaml
+  - configurations.yaml
+  - controller-configs.yaml
+  - providerconfigs.aws.crossplane.io.yaml
+  - roles.iam.aws.crossplane.io.yaml
+  - policies.iam.aws.crossplane.io.yaml
+  - helm-provider-config.yaml
+  - kubernetes-provider-config.yaml

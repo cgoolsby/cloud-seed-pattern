@@ -1,0 +1,348 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xvpcs.network.example.org
+spec:
+  group: network.example.org
+  names:
+    kind: XVPC
+    plural: xvpcs
+  claimNames:
+    kind: VPC
+    plural: vpcs
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                region:
+                  type: string
+                  description: "AWS region for the VPC"
+                cidrBlock:
+                  type: string
+                  description: "CIDR block for the VPC"
+                  default: "10.0.0.0/16"
+                enableDnsSupport:
+                  type: boolean
+                  default: true
+                enableDnsHostNames:
+                  type: boolean
+                  default: true
+                accountName:
+                  type: string
+                  description: "The child account name to deploy resources to"
+                  default: "child-account-1"
+                publicSubnetCIDRs:
+                  type: array
+                  description: "CIDR blocks for public subnets"
+                  items:
+                    type: string
+                  default: ["10.0.0.0/24", "10.0.1.0/24"]
+                privateSubnetCIDRs:
+                  type: array
+                  description: "CIDR blocks for private subnets"
+                  items:
+                    type: string
+                  default: ["10.0.2.0/24", "10.0.3.0/24"]
+              required:
+                - region
+                - accountName
+            status:
+              type: object
+              properties:
+                vpcId:
+                  type: string
+                  description: "The ID of the VPC"
+                publicSubnetIds:
+                  type: array
+                  items:
+                    type: string
+                  description: "IDs of public subnets"
+                privateSubnetIds:
+                  type: array
+                  items:
+                    type: string
+                  description: "IDs of private subnets"
+      additionalPrinterColumns:
+        - name: Region
+          type: string
+          jsonPath: .spec.region
+        - name: CIDR
+          type: string
+          jsonPath: .spec.cidrBlock
+        - name: Account
+          type: string
+          jsonPath: .spec.accountName
+        - name: VPC ID
+          type: string
+          jsonPath: .status.vpcId
+  defaultCompositionRef:
+    name: vpc-with-subnets
+---
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: vpc-with-subnets
+  labels:
+    crossplane.io/xrd: xvpcs.network.example.org
+spec:
+  compositeTypeRef:
+    apiVersion: network.example.org/v1alpha1
+    kind: XVPC
+  patchSets:
+    - name: common-parameters
+      patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.region
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.accountName
+          toFieldPath: spec.providerConfigRef.name
+  resources:
+    - name: vpc
+      base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: VPC
+        metadata:
+          name: composed-vpc
+        spec:
+          forProvider:
+            enableDnsSupport: true
+            enableDnsHostnames: true
+            tags:
+              - key: Name
+                value: crossplane-vpc
+              - key: Environment
+                value: production
+              - key: ManagedBy
+                value: crossplane
+          providerConfigRef:
+            name: default
+      patches:
+        - type: PatchSet
+          patchSetName: common-parameters
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.cidrBlock
+          toFieldPath: spec.forProvider.cidrBlock
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.enableDnsSupport
+          toFieldPath: spec.forProvider.enableDnsSupport
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.enableDnsHostNames
+          toFieldPath: spec.forProvider.enableDnsHostnames
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.atProvider.vpcId
+          toFieldPath: status.vpcId
+    
+    - name: internet-gateway
+      base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: InternetGateway
+        metadata:
+          name: composed-igw
+        spec:
+          forProvider:
+            vpcIdRef:
+              name: composed-vpc
+            tags:
+              - key: Name
+                value: crossplane-igw
+              - key: Environment
+                value: production
+              - key: ManagedBy
+                value: crossplane
+          providerConfigRef:
+            name: default
+      patches:
+        - type: PatchSet
+          patchSetName: common-parameters
+    
+    - name: public-route-table
+      base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: RouteTable
+        metadata:
+          name: composed-public-rt
+        spec:
+          forProvider:
+            vpcIdRef:
+              name: composed-vpc
+            routes:
+              - destinationCidrBlock: 0.0.0.0/0
+                gatewayIdRef:
+                  name: composed-igw
+            tags:
+              - key: Name
+                value: crossplane-public-rt
+              - key: Environment
+                value: production
+              - key: ManagedBy
+                value: crossplane
+          providerConfigRef:
+            name: default
+      patches:
+        - type: PatchSet
+          patchSetName: common-parameters
+    
+    - name: private-route-table
+      base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: RouteTable
+        metadata:
+          name: composed-private-rt
+        spec:
+          forProvider:
+            vpcIdRef:
+              name: composed-vpc
+            tags:
+              - key: Name
+                value: crossplane-private-rt
+              - key: Environment
+                value: production
+              - key: ManagedBy
+                value: crossplane
+          providerConfigRef:
+            name: default
+      patches:
+        - type: PatchSet
+          patchSetName: common-parameters
+    
+    - name: public-subnets
+      base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: Subnet
+        metadata:
+          name: composed-public-subnet-0
+        spec:
+          forProvider:
+            mapPublicIpOnLaunch: true
+            vpcIdRef:
+              name: composed-vpc
+            availabilityZone: us-east-1a
+            cidrBlock: 10.0.0.0/24
+            tags:
+              - key: Name
+                value: crossplane-public-subnet-0
+              - key: Environment
+                value: production
+              - key: ManagedBy
+                value: crossplane
+              - key: kubernetes.io/role/elb
+                value: "1"
+          providerConfigRef:
+            name: default
+      patches:
+        - type: PatchSet
+          patchSetName: common-parameters
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.publicSubnetCIDRs[0]
+          toFieldPath: spec.forProvider.cidrBlock
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.atProvider.subnetId
+          toFieldPath: status.publicSubnetIds[0]
+    
+    - name: public-subnet-1
+      base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: Subnet
+        metadata:
+          name: composed-public-subnet-1
+        spec:
+          forProvider:
+            mapPublicIpOnLaunch: true
+            vpcIdRef:
+              name: composed-vpc
+            availabilityZone: us-east-1b
+            cidrBlock: 10.0.1.0/24
+            tags:
+              - key: Name
+                value: crossplane-public-subnet-1
+              - key: Environment
+                value: production
+              - key: ManagedBy
+                value: crossplane
+              - key: kubernetes.io/role/elb
+                value: "1"
+          providerConfigRef:
+            name: default
+      patches:
+        - type: PatchSet
+          patchSetName: common-parameters
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.publicSubnetCIDRs[1]
+          toFieldPath: spec.forProvider.cidrBlock
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.atProvider.subnetId
+          toFieldPath: status.publicSubnetIds[1]
+    
+    - name: private-subnet-0
+      base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: Subnet
+        metadata:
+          name: composed-private-subnet-0
+        spec:
+          forProvider:
+            vpcIdRef:
+              name: composed-vpc
+            availabilityZone: us-east-1a
+            cidrBlock: 10.0.2.0/24
+            tags:
+              - key: Name
+                value: crossplane-private-subnet-0
+              - key: Environment
+                value: production
+              - key: ManagedBy
+                value: crossplane
+              - key: kubernetes.io/role/internal-elb
+                value: "1"
+          providerConfigRef:
+            name: default
+      patches:
+        - type: PatchSet
+          patchSetName: common-parameters
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.privateSubnetCIDRs[0]
+          toFieldPath: spec.forProvider.cidrBlock
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.atProvider.subnetId
+          toFieldPath: status.privateSubnetIds[0]
+    
+    - name: private-subnet-1
+      base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: Subnet
+        metadata:
+          name: composed-private-subnet-1
+        spec:
+          forProvider:
+            vpcIdRef:
+              name: composed-vpc
+            availabilityZone: us-east-1b
+            cidrBlock: 10.0.3.0/24
+            tags:
+              - key: Name
+                value: crossplane-private-subnet-1
+              - key: Environment
+                value: production
+              - key: ManagedBy
+                value: crossplane
+              - key: kubernetes.io/role/internal-elb
+                value: "1"
+          providerConfigRef:
+            name: default
+      patches:
+        - type: PatchSet
+          patchSetName: common-parameters
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.privateSubnetCIDRs[1]
+          toFieldPath: spec.forProvider.cidrBlock
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.atProvider.subnetId
+          toFieldPath: status.privateSubnetIds[1]
