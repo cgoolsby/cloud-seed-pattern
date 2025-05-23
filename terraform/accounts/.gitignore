@@ -1,0 +1,8 @@
+# Ignore actual account configurations
+accounts.tfvars
+
+# Terraform files
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
