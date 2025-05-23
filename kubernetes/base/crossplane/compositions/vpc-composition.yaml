@@ -224,7 +224,7 @@ spec:
             mapPublicIpOnLaunch: true
             vpcIdRef:
               name: composed-vpc
-            availabilityZone: us-east-1a
+            availabilityZone: # Will be patched from region
             cidrBlock: 10.0.0.0/24
             tags:
               - key: Name
@@ -243,6 +243,13 @@ spec:
         - type: FromCompositeFieldPath
           fromFieldPath: spec.publicSubnetCIDRs[0]
           toFieldPath: spec.forProvider.cidrBlock
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.availabilityZone
+          transforms:
+            - type: string
+              string:
+                fmt: "%sa"
         - type: ToCompositeFieldPath
           fromFieldPath: status.atProvider.subnetId
           toFieldPath: status.publicSubnetIds[0]
@@ -258,7 +265,7 @@ spec:
             mapPublicIpOnLaunch: true
             vpcIdRef:
               name: composed-vpc
-            availabilityZone: us-east-1b
+            availabilityZone: # Will be patched from region
             cidrBlock: 10.0.1.0/24
             tags:
               - key: Name
@@ -277,6 +284,13 @@ spec:
         - type: FromCompositeFieldPath
           fromFieldPath: spec.publicSubnetCIDRs[1]
           toFieldPath: spec.forProvider.cidrBlock
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.availabilityZone
+          transforms:
+            - type: string
+              string:
+                fmt: "%sb"
         - type: ToCompositeFieldPath
           fromFieldPath: status.atProvider.subnetId
           toFieldPath: status.publicSubnetIds[1]
@@ -291,7 +305,7 @@ spec:
           forProvider:
             vpcIdRef:
               name: composed-vpc
-            availabilityZone: us-east-1a
+            availabilityZone: # Will be patched from region
             cidrBlock: 10.0.2.0/24
             tags:
               - key: Name
@@ -310,6 +324,13 @@ spec:
         - type: FromCompositeFieldPath
           fromFieldPath: spec.privateSubnetCIDRs[0]
           toFieldPath: spec.forProvider.cidrBlock
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.availabilityZone
+          transforms:
+            - type: string
+              string:
+                fmt: "%sa"
         - type: ToCompositeFieldPath
           fromFieldPath: status.atProvider.subnetId
           toFieldPath: status.privateSubnetIds[0]
@@ -324,7 +345,7 @@ spec:
           forProvider:
             vpcIdRef:
               name: composed-vpc
-            availabilityZone: us-east-1b
+            availabilityZone: # Will be patched from region
             cidrBlock: 10.0.3.0/24
             tags:
               - key: Name
@@ -343,6 +364,13 @@ spec:
         - type: FromCompositeFieldPath
           fromFieldPath: spec.privateSubnetCIDRs[1]
           toFieldPath: spec.forProvider.cidrBlock
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.availabilityZone
+          transforms:
+            - type: string
+              string:
+                fmt: "%sb"
         - type: ToCompositeFieldPath
           fromFieldPath: status.atProvider.subnetId
           toFieldPath: status.privateSubnetIds[1]

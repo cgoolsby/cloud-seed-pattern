@@ -62,13 +62,12 @@ metadata:
 spec:
   credentials:
     source: InjectedIdentity
-  assumeRoleARN: # Reference from ConfigMap
-    source: ConfigMapValue
-    configMapRef:
-      name: aws-account-mycompany-dev
-      namespace: crossplane-system
-      key: ASSUME_ROLE_ARN
+  assumeRoleARN: "arn:aws:iam::123456789012:role/OrganizationAccountAccessRole"
 ```
+
+Note: Currently, ProviderConfig assumeRoleARN field requires a static string. 
+To use ConfigMap values, you would need to use tools like Kustomize or Helm 
+to substitute values during deployment.
 
 ## Adding New Accounts
 

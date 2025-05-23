@@ -60,7 +60,7 @@ flux events --watch
 # Check Crossplane resource status
 kubectl get managed -A
 kubectl get composite -A
-kubectl get vpc.network.example.org -A
+kubectl get vpcs.network.example.org -A
 
 # Check multi-account ProviderConfigs
 kubectl get providerconfigs.aws.crossplane.io -A
@@ -123,8 +123,8 @@ kubectl describe providerconfig default -n crossplane-system
 
 ### VPC Composition Issues
 - **Route Table Error**: The VPC composition has a known issue with RouteTable associations
-- **Region Mismatch**: Ensure VPC region matches hardcoded availability zones in composition (us-east-1)
 - **Account Access**: Verify OrganizationAccountAccessRole exists in target account
+- **AZ Assumptions**: VPC composition assumes regions have 'a' and 'b' availability zones
 
 ## Important Notes
 - Default cluster name: `fullStack-cluster`

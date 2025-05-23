@@ -10,12 +10,7 @@ metadata:
 spec:
   credentials:
     source: InjectedIdentity
-  assumeRoleChain:
-    - roleARN: # Dynamically reference from ConfigMap
-        fromConfigMapKeyRef:
-          name: aws-account-mycompany-dev
-          namespace: crossplane-system
-          key: ASSUME_ROLE_ARN
+  assumeRoleARN: "arn:aws:iam::DEV-ACCOUNT-ID:role/OrganizationAccountAccessRole"
 ---
 # Staging Account ProviderConfig
 apiVersion: aws.crossplane.io/v1beta1
@@ -26,12 +21,7 @@ metadata:
 spec:
   credentials:
     source: InjectedIdentity
-  assumeRoleChain:
-    - roleARN:
-        fromConfigMapKeyRef:
-          name: aws-account-mycompany-staging
-          namespace: crossplane-system
-          key: ASSUME_ROLE_ARN
+  assumeRoleARN: "arn:aws:iam::STAGING-ACCOUNT-ID:role/OrganizationAccountAccessRole"
 ---
 # Production Account ProviderConfig
 apiVersion: aws.crossplane.io/v1beta1
@@ -42,12 +32,7 @@ metadata:
 spec:
   credentials:
     source: InjectedIdentity
-  assumeRoleChain:
-    - roleARN:
-        fromConfigMapKeyRef:
-          name: aws-account-mycompany-prod
-          namespace: crossplane-system
-          key: ASSUME_ROLE_ARN
+  assumeRoleARN: "arn:aws:iam::PROD-ACCOUNT-ID:role/OrganizationAccountAccessRole"
 ---
 # Example VPC using dev account
 apiVersion: network.example.org/v1alpha1

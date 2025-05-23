@@ -71,8 +71,7 @@ metadata:
 spec:
   credentials:
     source: InjectedIdentity
-  assumeRole:
-    roleARN: "arn:aws:iam::ACCOUNT-ID:role/OrganizationAccountAccessRole"
+  assumeRoleARN: "arn:aws:iam::ACCOUNT-ID:role/OrganizationAccountAccessRole"
 ```
 
 ### Resource Targeting
