@@ -40,7 +40,7 @@ done
 # Check if GITHUB_TOKEN is set
 if [ -z "$GITHUB_TOKEN" ]; then
     echo "Error: GitHub token is required. Either set GITHUB_TOKEN environment variable or use -t flag."
-    echo "Error: Example 'export GITHUB_TOKEN=`gh auth token`'"
+    echo 'Error: Example "export GITHUB_TOKEN=$(gh auth token)"'
     exit 1
 fi
 
