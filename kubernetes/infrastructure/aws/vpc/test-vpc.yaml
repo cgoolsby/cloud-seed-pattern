@@ -1,0 +1,17 @@
+apiVersion: network.example.org/v1alpha1
+kind: VPC
+metadata:
+  name: test-vpc
+  namespace: default
+spec:
+  region: us-west-2
+  cidrBlock: "10.0.0.0/16"
+  enableDnsSupport: true
+  enableDnsHostNames: true
+  accountName: default
+  publicSubnetCIDRs:
+    - "10.0.0.0/24"
+    - "10.0.1.0/24"
+  privateSubnetCIDRs:
+    - "10.0.2.0/24"
+    - "10.0.3.0/24"
