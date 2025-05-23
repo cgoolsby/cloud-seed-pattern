@@ -3,8 +3,9 @@ kind: ControllerConfig
 metadata:
   name: aws-controller-config
   namespace: crossplane-system
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::692859948957:role/CrossplaneAWSProviderRole
 spec:
-  serviceAccountName: provider-aws-controller
   podSecurityContext:
     fsGroup: 2000
   args:
@@ -27,11 +28,7 @@ metadata:
   namespace: crossplane-system
 spec:
   credentials:
-    source: Secret
-    secretRef:
-      namespace: crossplane-system
-      name: aws-creds
-      key: credentials
+    source: InjectedIdentity
 ---
 # Provider config for cross-account access to child account 1
 apiVersion: aws.crossplane.io/v1beta1
