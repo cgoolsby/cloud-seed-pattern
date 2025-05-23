@@ -27,9 +27,11 @@ terraform apply -var-file="accounts.tfvars"
 ## How It Works
 
 1. Creates AWS accounts in your Organization
-2. Sets up account aliases automatically
-3. Creates individual ConfigMaps for each account in `crossplane-system` namespace
-4. Creates a master registry ConfigMap with all accounts
+2. Creates individual ConfigMaps for each account in `crossplane-system` namespace
+3. Creates a master registry ConfigMap with all accounts
+4. Integrates with Crossplane IRSA authentication for cross-account access
+
+Note: Account aliases are not automatically created to keep the setup simpler.
 
 ## ConfigMap Structure
 
@@ -93,6 +95,8 @@ terraform apply -var-file="accounts.tfvars"
 ## Important Notes
 
 - Each AWS account needs a unique email address
-- Account aliases must be globally unique across all AWS
 - The OrganizationAccountAccessRole is created automatically by AWS Organizations
 - ConfigMaps are created in the management cluster only
+- **Account Deletion**: AWS accounts created via Organizations cannot be automatically deleted by Terraform due to AWS constraints. Manual steps are required to close accounts.
+- **Email Access**: Ensure you have access to the email addresses used, as AWS may send important notifications there
+- **Billing**: New accounts inherit billing settings from the Organization master account

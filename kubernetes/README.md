@@ -54,16 +54,52 @@ Templates use placeholder variables (e.g., ${CLUSTER_NAME}) that should be repla
 
 ## Multi-Account Strategy
 
-For organizations managing multiple AWS accounts:
+This repository supports automated multi-account AWS deployments:
 
-1. Define provider configurations for each account in crossplane/providers/
-2. Reference the appropriate account in your infrastructure resources
-3. Use namespace isolation to separate resources by team or environment
+### Account Creation
+1. **Terraform Setup**: Use `terraform/accounts/` to create AWS accounts via Organizations
+2. **Auto-Generated ConfigMaps**: Each account gets a ConfigMap with account details in `crossplane-system` namespace
+3. **ProviderConfigs**: Create ProviderConfigs that reference the ConfigMaps for cross-account access
+
+### Account Usage
+```yaml
+# Example ProviderConfig for a development account
+apiVersion: aws.crossplane.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: dev-account
+spec:
+  credentials:
+    source: InjectedIdentity
+  assumeRole:
+    roleARN: "arn:aws:iam::ACCOUNT-ID:role/OrganizationAccountAccessRole"
+```
+
+### Resource Targeting
+```yaml
+# Example VPC in specific account
+apiVersion: network.example.org/v1alpha1
+kind: VPC
+metadata:
+  name: dev-vpc
+spec:
+  accountName: dev-account  # References the ProviderConfig
+  region: us-east-1
+  cidrBlock: "10.1.0.0/16"
+```
+
+## IRSA Authentication
+
+All Crossplane operations use IAM Roles for Service Accounts (IRSA):
+- **No static credentials** stored in the cluster
+- **Cross-account access** via OrganizationAccountAccessRole
+- **Automatic token rotation** handled by AWS STS
 
 ## Integration with Frontend GUI
 
 For teams looking to consume these resources via a GUI:
 - Create clusters/infrastructure using the templates
 - Store template parameters in a database
+- Reference account ConfigMaps to populate account dropdown lists
 - Generate the YAML files dynamically based on user input
 - Apply the resources using Kubernetes API or GitOps workflows
