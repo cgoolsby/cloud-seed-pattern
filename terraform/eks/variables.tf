@@ -21,7 +21,7 @@ variable "tags" {
   type        = map(string)
   default = {
     Environment = "dev"
-    Project     = "fullstack-Cluster"
+    Project     = "fullStack-cluster"
     ManagedBy   = "terraform"
   }
 }
