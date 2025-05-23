@@ -1,6 +1,7 @@
 # Cluster API Provider AWS Components with IRSA
 # This file is managed by Flux and contains the AWS infrastructure provider
-# Source: https://github.com/kubernetes-sigs/cluster-api-provider-aws/releases/latest/download/infrastructure-components.yamlapiVersion: v1
+# Source: https://github.com/kubernetes-sigs/cluster-api-provider-aws/releases/latest/download/infrastructure-components.yaml
+apiVersion: v1
 kind: Namespace
 metadata:
   labels:
