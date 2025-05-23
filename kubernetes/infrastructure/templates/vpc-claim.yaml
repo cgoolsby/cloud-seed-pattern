@@ -1,14 +1,14 @@
 apiVersion: network.example.org/v1alpha1
 kind: VPC
 metadata:
-  name: test-vpc
-  namespace: default
+  name: ${VPC_NAME}
+  namespace: ${NAMESPACE}
 spec:
-  region: us-east-1
+  region: ${AWS_REGION}
   cidrBlock: "10.0.0.0/16"
   enableDnsSupport: true
   enableDnsHostNames: true
-  accountName: default
+  accountName: ${ACCOUNT_NAME}
   publicSubnetCIDRs:
     - "10.0.0.0/24"
     - "10.0.1.0/24"

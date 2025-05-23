@@ -1,0 +1,13 @@
+apiVersion: iam.example.org/v1alpha1
+kind: ClusterRole
+metadata:
+  name: ${ROLE_NAME}
+  namespace: ${NAMESPACE}
+spec:
+  accountName: ${ACCOUNT_NAME}
+  roleName: "${ROLE_NAME}"
+  clusterName: ${CLUSTER_NAME}
+  namespace: ${SERVICE_ACCOUNT_NAMESPACE}
+  serviceAccountName: ${SERVICE_ACCOUNT_NAME}
+  trustAccounts:
+    - "${TRUST_ACCOUNT_ID}"
