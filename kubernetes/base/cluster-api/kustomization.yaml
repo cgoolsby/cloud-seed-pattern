@@ -7,8 +7,18 @@ resources:
   - bootstrap-kubeadm-components.yaml
   - control-plane-kubeadm-components.yaml
   - infrastructure-aws-components.yaml
-  - capa-irsa-role.yaml
   - aws-identity-provider.yaml
+
+patches:
+  - target:
+      kind: ServiceAccount
+      name: capa-controller-manager
+      namespace: capa-system
+    patch: |
+      - op: add
+        path: /metadata/annotations
+        value:
+          eks.amazonaws.com/role-arn: arn:aws:iam::692859948957:role/capa-controller-role
   
 # Note: Different components use different namespaces:
 # - cluster-api-system for core components

@@ -1,8 +1,0 @@
-# Patch for CAPA ServiceAccount to use IRSA
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: capa-controller-manager
-  namespace: capa-system
-  annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::692859948957:role/capa-controller-role
