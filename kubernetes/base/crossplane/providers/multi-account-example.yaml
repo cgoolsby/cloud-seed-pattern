@@ -1,0 +1,61 @@
+# Example: Using auto-generated account ConfigMaps with Crossplane
+# This file shows how to create ProviderConfigs for each account
+
+# Development Account ProviderConfig
+apiVersion: aws.crossplane.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: aws-dev
+  namespace: crossplane-system
+spec:
+  credentials:
+    source: InjectedIdentity
+  assumeRoleChain:
+    - roleARN: # Dynamically reference from ConfigMap
+        fromConfigMapKeyRef:
+          name: aws-account-mycompany-dev
+          namespace: crossplane-system
+          key: ASSUME_ROLE_ARN
+---
+# Staging Account ProviderConfig
+apiVersion: aws.crossplane.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: aws-staging
+  namespace: crossplane-system
+spec:
+  credentials:
+    source: InjectedIdentity
+  assumeRoleChain:
+    - roleARN:
+        fromConfigMapKeyRef:
+          name: aws-account-mycompany-staging
+          namespace: crossplane-system
+          key: ASSUME_ROLE_ARN
+---
+# Production Account ProviderConfig
+apiVersion: aws.crossplane.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: aws-prod
+  namespace: crossplane-system
+spec:
+  credentials:
+    source: InjectedIdentity
+  assumeRoleChain:
+    - roleARN:
+        fromConfigMapKeyRef:
+          name: aws-account-mycompany-prod
+          namespace: crossplane-system
+          key: ASSUME_ROLE_ARN
+---
+# Example VPC using dev account
+apiVersion: network.example.org/v1alpha1
+kind: VPC
+metadata:
+  name: dev-vpc
+  namespace: default
+spec:
+  region: us-east-1
+  cidrBlock: "10.1.0.0/16"
+  accountName: aws-dev  # References the ProviderConfig above
