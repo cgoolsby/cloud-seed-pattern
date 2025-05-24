@@ -24,6 +24,9 @@ build/
 .DS_Store
 Thumbs.db
 
+# Dev workflow
+.dev-session
+
 # Terraform
 .terraform/
 *.tfstate
