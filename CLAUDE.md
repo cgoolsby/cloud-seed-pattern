@@ -46,6 +46,41 @@ kubectl get configmaps -n crossplane-system | grep aws-account
 ```
 
 ### Development Workflow
+
+#### Preferred Local Development Workflow
+When debugging or developing new resources, use the local development workflow to avoid cluttering git history with debug commits:
+
+```bash
+# Start a development session
+./scripts/dev-workflow.sh start "debugging VPC composition"
+
+# Test your changes locally without committing
+./scripts/dev-workflow.sh test kubernetes/infrastructure/aws/vpc/test-vpc.yaml
+
+# Preview what would change
+./scripts/dev-workflow.sh diff kubernetes/infrastructure/aws/vpc/test-vpc.yaml
+
+# Create checkpoints as you work (local commits)
+./scripts/dev-workflow.sh checkpoint "fixed route table issue"
+
+# When everything works, package into a single commit
+./scripts/dev-workflow.sh finish "Fix VPC composition RouteTable associations"
+
+# Check session status anytime
+./scripts/dev-workflow.sh status
+```
+
+This workflow:
+- Pauses Flux reconciliation automatically
+- Creates a temporary work branch for your experiments
+- Allows fast iteration with `kubectl apply` directly
+- Tracks your work with checkpoint commits
+- Squashes everything into a clean final commit
+- Resumes Flux when you're done
+
+#### Production Workflow
+For deploying changes across environments:
+
 ```bash
 # Update Flux to track a different branch
 ./scripts/update-flux-branch.sh <branch-name>
