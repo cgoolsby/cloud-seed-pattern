@@ -46,7 +46,7 @@ patches:
       name: main
     patch: |-
       - op: replace
-        path: /spec/providerConfigRef/name
+        path: /spec/accountName
         value: test-account-1
       - op: replace
         path: /spec/cidrBlock

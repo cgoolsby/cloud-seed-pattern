@@ -4,8 +4,7 @@ metadata:
   name: main
 spec:
   region: us-west-2
-  providerConfigRef:
-    name: PLACEHOLDER # Will be patched by kustomize
+  accountName: PLACEHOLDER # Will be patched by kustomize
   cidrBlock: "10.0.0.0/16" # Will be patched by kustomize
   enableDnsSupport: true
-  enableDnsHostNames: true  # Note: capital N in Names
+  enableDnsHostNames: true
