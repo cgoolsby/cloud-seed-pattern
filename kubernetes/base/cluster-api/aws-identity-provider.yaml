@@ -1,4 +1,4 @@
-apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
 kind: AWSClusterControllerIdentity
 metadata:
   name: default
@@ -11,7 +11,7 @@ spec:
 ---
 # Example cross-account role configuration
 # Create one of these for each child account where clusters will be created
-apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
 kind: AWSClusterRoleIdentity
 metadata:
   name: child-account-1
