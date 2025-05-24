@@ -51,12 +51,3 @@ patches:
       - op: replace
         path: /spec/cidrBlock
         value: "10.2.0.0/16"
-      - op: add
-        path: /spec/tags/Name
-        value: test-account-1-main-vpc
-      - op: add
-        path: /spec/tags/Environment
-        value: development
-      - op: add
-        path: /spec/tags/AccountAlias
-        value: test-account-1

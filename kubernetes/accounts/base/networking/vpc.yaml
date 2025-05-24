@@ -8,7 +8,4 @@ spec:
     name: PLACEHOLDER # Will be patched by kustomize
   cidrBlock: "10.0.0.0/16" # Will be patched by kustomize
   enableDnsSupport: true
-  enableDnsHostnames: true
-  tags:
-    ManagedBy: crossplane
-    Purpose: eks-clusters
+  enableDnsHostNames: true  # Note: capital N in Names
