@@ -12,6 +12,11 @@ spec:
       base:
         apiVersion: iam.aws.crossplane.io/v1beta1
         kind: Role
+        metadata:
+          annotations:
+            crossplane.io/external-name: eks-controlplane.cluster-api-provider-aws.sigs.k8s.io
+          labels:
+            capa.role: eks-control-plane
         spec:
           forProvider:
             assumeRolePolicyDocument: |
@@ -25,14 +30,15 @@ spec:
                   "Action": "sts:AssumeRole"
                 }]
               }
-            roleName: eks-controlplane.cluster-api-provider-aws.sigs.k8s.io
+            tags:
+              - key: ManagedBy
+                value: crossplane
+              - key: Purpose
+                value: cluster-api-eks-control-plane
       patches:
         - type: FromCompositeFieldPath
-          fromFieldPath: spec.region
-          toFieldPath: spec.forProvider.region
-        - type: FromCompositeFieldPath
-          fromFieldPath: spec.tags
-          toFieldPath: spec.forProvider.tags
+          fromFieldPath: spec.providerConfigRef.name
+          toFieldPath: spec.providerConfigRef.name
           
     # EKS Control Plane Policy Attachments
     - name: eks-cluster-policy
@@ -45,11 +51,11 @@ spec:
             roleNameSelector:
               matchControllerRef: true
               matchLabels:
-                role: eks-control-plane
+                capa.role: eks-control-plane
       patches:
         - type: FromCompositeFieldPath
-          fromFieldPath: spec.region
-          toFieldPath: spec.forProvider.region
+          fromFieldPath: spec.providerConfigRef.name
+          toFieldPath: spec.providerConfigRef.name
           
     - name: eks-vpc-resource-controller-policy
       base:
@@ -61,17 +67,22 @@ spec:
             roleNameSelector:
               matchControllerRef: true
               matchLabels:
-                role: eks-control-plane
+                capa.role: eks-control-plane
       patches:
         - type: FromCompositeFieldPath
-          fromFieldPath: spec.region
-          toFieldPath: spec.forProvider.region
+          fromFieldPath: spec.providerConfigRef.name
+          toFieldPath: spec.providerConfigRef.name
           
     # EKS Node Group Role
     - name: eks-node-group-role
       base:
         apiVersion: iam.aws.crossplane.io/v1beta1
         kind: Role
+        metadata:
+          annotations:
+            crossplane.io/external-name: eks-nodegroup.cluster-api-provider-aws.sigs.k8s.io
+          labels:
+            capa.role: eks-node-group
         spec:
           forProvider:
             assumeRolePolicyDocument: |
@@ -85,14 +96,15 @@ spec:
                   "Action": "sts:AssumeRole"
                 }]
               }
-            roleName: eks-nodegroup.cluster-api-provider-aws.sigs.k8s.io
+            tags:
+              - key: ManagedBy
+                value: crossplane
+              - key: Purpose
+                value: cluster-api-eks-node-group
       patches:
         - type: FromCompositeFieldPath
-          fromFieldPath: spec.region
-          toFieldPath: spec.forProvider.region
-        - type: FromCompositeFieldPath
-          fromFieldPath: spec.tags
-          toFieldPath: spec.forProvider.tags
+          fromFieldPath: spec.providerConfigRef.name
+          toFieldPath: spec.providerConfigRef.name
           
     # EKS Node Group Policy Attachments
     - name: eks-worker-node-policy
@@ -105,11 +117,11 @@ spec:
             roleNameSelector:
               matchControllerRef: true
               matchLabels:
-                role: eks-node-group
+                capa.role: eks-node-group
       patches:
         - type: FromCompositeFieldPath
-          fromFieldPath: spec.region
-          toFieldPath: spec.forProvider.region
+          fromFieldPath: spec.providerConfigRef.name
+          toFieldPath: spec.providerConfigRef.name
           
     - name: eks-cni-policy
       base:
@@ -121,11 +133,11 @@ spec:
             roleNameSelector:
               matchControllerRef: true
               matchLabels:
-                role: eks-node-group
+                capa.role: eks-node-group
       patches:
         - type: FromCompositeFieldPath
-          fromFieldPath: spec.region
-          toFieldPath: spec.forProvider.region
+          fromFieldPath: spec.providerConfigRef.name
+          toFieldPath: spec.providerConfigRef.name
           
     - name: eks-container-registry-policy
       base:
@@ -137,11 +149,11 @@ spec:
             roleNameSelector:
               matchControllerRef: true
               matchLabels:
-                role: eks-node-group
+                capa.role: eks-node-group
       patches:
         - type: FromCompositeFieldPath
-          fromFieldPath: spec.region
-          toFieldPath: spec.forProvider.region
+          fromFieldPath: spec.providerConfigRef.name
+          toFieldPath: spec.providerConfigRef.name
           
     - name: eks-ssm-policy
       base:
@@ -153,17 +165,22 @@ spec:
             roleNameSelector:
               matchControllerRef: true
               matchLabels:
-                role: eks-node-group
+                capa.role: eks-node-group
       patches:
         - type: FromCompositeFieldPath
-          fromFieldPath: spec.region
-          toFieldPath: spec.forProvider.region
+          fromFieldPath: spec.providerConfigRef.name
+          toFieldPath: spec.providerConfigRef.name
           
     # EC2 Control Plane Role
     - name: control-plane-role
       base:
         apiVersion: iam.aws.crossplane.io/v1beta1
         kind: Role
+        metadata:
+          annotations:
+            crossplane.io/external-name: control-plane.cluster-api-provider-aws.sigs.k8s.io
+          labels:
+            capa.role: control-plane
         spec:
           forProvider:
             assumeRolePolicyDocument: |
@@ -177,37 +194,42 @@ spec:
                   "Action": "sts:AssumeRole"
                 }]
               }
-            roleName: control-plane.cluster-api-provider-aws.sigs.k8s.io
+            tags:
+              - key: ManagedBy
+                value: crossplane
+              - key: Purpose
+                value: cluster-api-control-plane
       patches:
         - type: FromCompositeFieldPath
-          fromFieldPath: spec.region
-          toFieldPath: spec.forProvider.region
-        - type: FromCompositeFieldPath
-          fromFieldPath: spec.tags
-          toFieldPath: spec.forProvider.tags
+          fromFieldPath: spec.providerConfigRef.name
+          toFieldPath: spec.providerConfigRef.name
           
     # EC2 Control Plane Instance Profile
     - name: control-plane-instance-profile
       base:
-        apiVersion: iam.aws.crossplane.io/v1beta1
+        apiVersion: iam.aws.crossplane.io/v1alpha1
         kind: InstanceProfile
+        metadata:
+          annotations:
+            crossplane.io/external-name: control-plane.cluster-api-provider-aws.sigs.k8s.io
         spec:
           forProvider:
-            instanceProfileName: control-plane.cluster-api-provider-aws.sigs.k8s.io
-            roleSelector:
-              matchControllerRef: true
-              matchLabels:
-                role: control-plane
+            role: control-plane.cluster-api-provider-aws.sigs.k8s.io
       patches:
         - type: FromCompositeFieldPath
-          fromFieldPath: spec.region
-          toFieldPath: spec.forProvider.region
+          fromFieldPath: spec.providerConfigRef.name
+          toFieldPath: spec.providerConfigRef.name
           
     # EC2 Nodes Role
     - name: nodes-role
       base:
         apiVersion: iam.aws.crossplane.io/v1beta1
         kind: Role
+        metadata:
+          annotations:
+            crossplane.io/external-name: nodes.cluster-api-provider-aws.sigs.k8s.io
+          labels:
+            capa.role: nodes
         spec:
           forProvider:
             assumeRolePolicyDocument: |
@@ -221,37 +243,40 @@ spec:
                   "Action": "sts:AssumeRole"
                 }]
               }
-            roleName: nodes.cluster-api-provider-aws.sigs.k8s.io
+            tags:
+              - key: ManagedBy
+                value: crossplane
+              - key: Purpose
+                value: cluster-api-nodes
       patches:
         - type: FromCompositeFieldPath
-          fromFieldPath: spec.region
-          toFieldPath: spec.forProvider.region
-        - type: FromCompositeFieldPath
-          fromFieldPath: spec.tags
-          toFieldPath: spec.forProvider.tags
+          fromFieldPath: spec.providerConfigRef.name
+          toFieldPath: spec.providerConfigRef.name
           
     # EC2 Nodes Instance Profile
     - name: nodes-instance-profile
       base:
-        apiVersion: iam.aws.crossplane.io/v1beta1
+        apiVersion: iam.aws.crossplane.io/v1alpha1
         kind: InstanceProfile
+        metadata:
+          annotations:
+            crossplane.io/external-name: nodes.cluster-api-provider-aws.sigs.k8s.io
         spec:
           forProvider:
-            instanceProfileName: nodes.cluster-api-provider-aws.sigs.k8s.io
-            roleSelector:
-              matchControllerRef: true
-              matchLabels:
-                role: nodes
+            role: nodes.cluster-api-provider-aws.sigs.k8s.io
       patches:
         - type: FromCompositeFieldPath
-          fromFieldPath: spec.region
-          toFieldPath: spec.forProvider.region
+          fromFieldPath: spec.providerConfigRef.name
+          toFieldPath: spec.providerConfigRef.name
           
     # Control Plane IAM Policy
     - name: control-plane-policy
       base:
         apiVersion: iam.aws.crossplane.io/v1beta1
         kind: Policy
+        metadata:
+          labels:
+            capa.policy: control-plane
         spec:
           forProvider:
             name: control-plane.cluster-api-provider-aws.sigs.k8s.io
@@ -312,10 +337,15 @@ spec:
                   }
                 ]
               }
+            tags:
+              - key: ManagedBy
+                value: crossplane
+              - key: Purpose
+                value: cluster-api-control-plane-policy
       patches:
         - type: FromCompositeFieldPath
-          fromFieldPath: spec.region
-          toFieldPath: spec.forProvider.region
+          fromFieldPath: spec.providerConfigRef.name
+          toFieldPath: spec.providerConfigRef.name
           
     # Attach Control Plane Policy
     - name: control-plane-policy-attachment
@@ -327,15 +357,15 @@ spec:
             policyArnSelector:
               matchControllerRef: true
               matchLabels:
-                policy: control-plane
+                capa.policy: control-plane
             roleNameSelector:
               matchControllerRef: true
               matchLabels:
-                role: control-plane
+                capa.role: control-plane
       patches:
         - type: FromCompositeFieldPath
-          fromFieldPath: spec.region
-          toFieldPath: spec.forProvider.region
+          fromFieldPath: spec.providerConfigRef.name
+          toFieldPath: spec.providerConfigRef.name
           
     # Node SSM Policy Attachment
     - name: nodes-ssm-policy
@@ -348,30 +378,25 @@ spec:
             roleNameSelector:
               matchControllerRef: true
               matchLabels:
-                role: nodes
+                capa.role: nodes
       patches:
         - type: FromCompositeFieldPath
-          fromFieldPath: spec.region
-          toFieldPath: spec.forProvider.region
+          fromFieldPath: spec.providerConfigRef.name
+          toFieldPath: spec.providerConfigRef.name
           
-    # Add labels to resources for selection
-    - name: label-eks-control-plane-role
+    # Missing attachments for EKS node group managed policies
+    - name: nodes-ssm-policy-eks
       base:
         apiVersion: iam.aws.crossplane.io/v1beta1
-        kind: Role
+        kind: RolePolicyAttachment
+        spec:
+          forProvider:
+            policyArn: arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+            roleNameSelector:
+              matchControllerRef: true
+              matchLabels:
+                capa.role: eks-node-group
       patches:
-        - type: CombineFromComposite
-          combine:
-            variables:
-              - fromFieldPath: metadata.uid
-            strategy: string
-            string:
-              fmt: "%s-eks-control-plane-role"
-          toFieldPath: metadata.name
         - type: FromCompositeFieldPath
-          fromFieldPath: metadata.labels
-          toFieldPath: metadata.labels
-          transforms:
-            - type: map
-              map:
-                role: eks-control-plane
+          fromFieldPath: spec.providerConfigRef.name
+          toFieldPath: spec.providerConfigRef.name

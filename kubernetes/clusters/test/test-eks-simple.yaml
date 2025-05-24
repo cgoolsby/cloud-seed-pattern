@@ -1,0 +1,72 @@
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: test-eks-simple
+  namespace: default
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+        - 192.168.0.0/16
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1beta2
+    kind: AWSManagedControlPlane
+    name: test-eks-simple-control-plane
+  infrastructureRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1beta2
+    kind: AWSManagedControlPlane
+    name: test-eks-simple-control-plane
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1beta2
+kind: AWSManagedControlPlane
+metadata:
+  name: test-eks-simple-control-plane
+  namespace: default
+spec:
+  region: us-west-2
+  version: "v1.28"
+  roleName: eks-controlplane.cluster-api-provider-aws.sigs.k8s.io
+  identityRef:
+    kind: AWSClusterRoleIdentity
+    name: test-account-identity
+  network:
+    vpc:
+      id: vpc-024c10ffcc74e11e5
+    subnets:
+      - id: subnet-06f3a5f9b3ca897d9
+      - id: subnet-0575af9ebab56fce9
+      - id: subnet-077b88cdae46ff725
+  associateOIDCProvider: true
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachinePool
+metadata:
+  name: test-eks-simple-pool-0
+  namespace: default
+spec:
+  clusterName: test-eks-simple
+  replicas: 2
+  template:
+    spec:
+      clusterName: test-eks-simple
+      bootstrap:
+        dataSecretName: ""
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+        kind: AWSManagedMachinePool
+        name: test-eks-simple-pool-0
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+kind: AWSManagedMachinePool
+metadata:
+  name: test-eks-simple-pool-0
+  namespace: default
+spec:
+  roleAdditionalPolicies:
+    - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+  roleName: eks-nodegroup.cluster-api-provider-aws.sigs.k8s.io
+  scaling:
+    minSize: 1
+    maxSize: 3
+  instanceType: t3.medium
+  eksNodegroupName: test-eks-simple-ng

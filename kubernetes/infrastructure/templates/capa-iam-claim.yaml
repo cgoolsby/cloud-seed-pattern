@@ -7,7 +7,7 @@ spec:
   region: us-west-2
   accountId: "137457118074"  # Test account ID
   providerConfigRef:
-    name: aws-provider-test
+    name: test-account-1
   tags:
     Environment: test
     ManagedBy: crossplane
