@@ -1,0 +1,14 @@
+apiVersion: aws.platform.io/v1alpha1
+kind: CAPAIAMRoles
+metadata:
+  name: test-account-capa-iam
+  namespace: crossplane-system
+spec:
+  region: us-west-2
+  accountId: "137457118074"  # Test account ID
+  providerConfigRef:
+    name: aws-provider-test
+  tags:
+    Environment: test
+    ManagedBy: crossplane
+    Purpose: cluster-api

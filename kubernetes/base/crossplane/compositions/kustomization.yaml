@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - vpc-composition.yaml
   - iam-role-composition.yaml
+  - capa-iam-composition.yaml

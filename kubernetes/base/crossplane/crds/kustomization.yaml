@@ -12,3 +12,4 @@ resources:
   - policies.iam.aws.crossplane.io.yaml
   - helm-provider-config.yaml
   - kubernetes-provider-config.yaml
+  - capa-iam-xrd.yaml
