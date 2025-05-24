@@ -1,0 +1,22 @@
+apiVersion: controlplane.cluster.x-k8s.io/v1beta2
+kind: AWSManagedControlPlane
+metadata:
+  name: CLUSTER-NAME-control-plane
+spec:
+  region: us-west-2
+  version: "v1.28"
+  roleName: eks-controlplane.cluster-api-provider-aws.sigs.k8s.io
+  identityRef:
+    kind: AWSClusterRoleIdentity
+    name: ACCOUNT-ALIAS-identity
+  network:
+    vpc:
+      id: VPC-ID  # Will be patched
+  associateOIDCProvider: true
+  addons:
+  - name: vpc-cni
+    version: v1.16.0-eksbuild.1
+  - name: coredns
+    version: v1.10.1-eksbuild.6
+  - name: kube-proxy
+    version: v1.28.5-eksbuild.2

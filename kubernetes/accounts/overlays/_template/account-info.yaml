@@ -1,0 +1,12 @@
+# Account information ConfigMap
+# This should be automatically populated from Terraform output
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: account-info
+data:
+  ACCOUNT_ID: "ACCOUNT-ID"
+  ACCOUNT_NAME: "Account Name"
+  ACCOUNT_ALIAS: "ACCOUNT-ALIAS"
+  ENVIRONMENT: "ENVIRONMENT"
+  NAMESPACE: "aws-ACCOUNT-ALIAS"

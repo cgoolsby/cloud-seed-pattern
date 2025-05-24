@@ -1,0 +1,69 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# IMPORTANT: Update these values for your account
+namePrefix: ""  # Optional prefix
+nameSuffix: ""  # Optional suffix
+
+# Update the namespace name
+namespace: aws-ACCOUNT-ALIAS
+
+# Base resources to include
+resources:
+  - ../../base
+  - account-info.yaml
+  - provider-config.yaml
+  - cluster-role-identity.yaml
+
+# Patches to customize resources
+patches:
+  # Update namespace name
+  - target:
+      kind: Namespace
+      name: aws-account
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: aws-ACCOUNT-ALIAS
+      - op: add
+        path: /metadata/labels/account.aws~1alias
+        value: ACCOUNT-ALIAS
+
+  # Update CAPA IAM roles
+  - target:
+      kind: CAPAIAMRoles
+      name: capa-iam
+    patch: |-
+      - op: replace
+        path: /spec/accountId
+        value: "ACCOUNT-ID"
+      - op: replace
+        path: /spec/providerConfigRef/name
+        value: ACCOUNT-ALIAS
+      - op: add
+        path: /spec/tags/Environment
+        value: ENVIRONMENT
+      - op: add
+        path: /spec/tags/AccountAlias
+        value: ACCOUNT-ALIAS
+
+  # Update VPC configuration
+  - target:
+      kind: VPC
+      name: main
+    patch: |-
+      - op: replace
+        path: /spec/providerConfigRef/name
+        value: ACCOUNT-ALIAS
+      - op: replace
+        path: /spec/cidrBlock
+        value: "10.X.0.0/16"  # Update X based on environment
+      - op: add
+        path: /spec/tags/Name
+        value: ACCOUNT-ALIAS-main-vpc
+      - op: add
+        path: /spec/tags/Environment
+        value: ENVIRONMENT
+      - op: add
+        path: /spec/tags/AccountAlias
+        value: ACCOUNT-ALIAS

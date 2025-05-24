@@ -1,0 +1,16 @@
+# CAPA Cluster Role Identity for cross-account access
+# This stays in the default namespace but references this account
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+kind: AWSClusterRoleIdentity
+metadata:
+  name: ACCOUNT-ALIAS-identity
+  namespace: default  # Must be in default namespace
+spec:
+  allowedNamespaces:
+    list:
+    - default
+    - aws-ACCOUNT-ALIAS
+  roleARN: arn:aws:iam::ACCOUNT-ID:role/OrganizationAccountAccessRole
+  sourceIdentityRef:
+    kind: AWSClusterControllerIdentity
+    name: default

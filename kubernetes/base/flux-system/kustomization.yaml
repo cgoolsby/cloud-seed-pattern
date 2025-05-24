@@ -8,6 +8,7 @@ resources:
   - gotk-sync.yaml
   - helm-repositories.yaml
   - infrastructure.yaml
+  - accounts.yaml
 
 commonLabels:
   app.kubernetes.io/component: flux-system

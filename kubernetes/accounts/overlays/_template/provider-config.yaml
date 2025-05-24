@@ -1,0 +1,9 @@
+# Crossplane AWS Provider Configuration
+apiVersion: aws.crossplane.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: ACCOUNT-ALIAS
+spec:
+  credentials:
+    source: InjectedIdentity
+  assumeRoleARN: arn:aws:iam::ACCOUNT-ID:role/OrganizationAccountAccessRole
