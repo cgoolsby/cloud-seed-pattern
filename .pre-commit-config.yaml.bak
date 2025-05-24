@@ -1,0 +1,85 @@
+repos:
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: ['--unsafe']  # Allow custom Kubernetes tags
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+
+  # YAML linting
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.33.0
+    hooks:
+      - id: yamllint
+        args: ['-c', '.yamllint']
+        files: \.(yaml|yml)$
+
+  # Shell script linting
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.9.0.6
+    hooks:
+      - id: shellcheck
+        args: ['--severity=warning']
+
+  # Terraform formatting and validation
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.86.0
+    hooks:
+      - id: terraform_fmt
+      - id: terraform_validate
+      - id: terraform_tflint
+        args:
+          - '--args=--config=__GIT_WORKING_DIR__/.tflint.hcl'
+
+  # Kubernetes manifest validation
+  - repo: https://github.com/syntasso/kubeval
+    rev: v0.16.1
+    hooks:
+      - id: kubeval
+        files: kubernetes/.*\.(yaml|yml)$
+        exclude: |
+          (?x)^(
+            kubernetes/.*/kustomization\.yaml|
+            kubernetes/base/crossplane/crds/.*|
+            kubernetes/base/cluster-api/crds/.*|
+            kubernetes/base/flux-system/.*
+          )$
+
+  # Markdown linting
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.38.0
+    hooks:
+      - id: markdownlint
+        args: ['--fix']
+
+  # Secret detection
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+
+# Additional checks for CI only (use: pre-commit run --hook-stage manual)
+  - repo: local
+    hooks:
+      - id: kustomize-build
+        name: Kustomize Build Validation
+        entry: bash -c 'find kubernetes -name kustomization.yaml -exec dirname {} \; | xargs -I {} kustomize build {} > /dev/null'
+        language: system
+        files: kubernetes/.*\.(yaml|yml)$
+        stages: [manual]
+      
+      - id: flux-validate
+        name: Flux Validation
+        entry: flux tree ks flux-system
+        language: system
+        pass_filenames: false
+        stages: [manual]

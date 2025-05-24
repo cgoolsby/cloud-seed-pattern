@@ -105,6 +105,47 @@ kubectl get clusters -A
 kubectl get machinedeployments -A
 ```
 
+### Code Quality Tools
+
+#### Pre-commit Setup
+This repository uses pre-commit hooks to ensure code quality and catch issues before committing:
+
+```bash
+# Install pre-commit (requires Python)
+pip install pre-commit
+
+# Install the git hooks
+pre-commit install
+
+# Run manually on all files (useful for initial setup)
+pre-commit run --all-files
+
+# Update hook versions
+pre-commit autoupdate
+```
+
+The pre-commit configuration includes:
+- **YAML validation**: Syntax checking and formatting with yamllint
+- **Kubernetes validation**: Manifest validation with kubeval
+- **Shell scripts**: Linting with shellcheck
+- **Terraform**: Format checking and validation with terraform fmt/validate and tflint
+- **Security**: Secret detection to prevent accidental commits
+- **General**: Trailing whitespace, large files, merge conflicts
+
+To skip hooks temporarily (not recommended):
+```bash
+git commit --no-verify -m "emergency fix"
+```
+
+To run specific hooks:
+```bash
+# Run only YAML linting
+pre-commit run yamllint --all-files
+
+# Run only on staged files (default behavior)
+pre-commit run
+```
+
 ## Architecture
 
 ### Directory Structure

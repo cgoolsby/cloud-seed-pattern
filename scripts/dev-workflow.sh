@@ -44,7 +44,7 @@ Commands:
     checkpoint [message]  Create a checkpoint commit
     test <file/dir>       Apply resources locally for testing
     diff <file/dir>       Show what would change
-    finish [message]      End session and create final commit
+    finish [message] [--non-interactive]  End session and create final commit
     abort                 Abort session and restore state
 
 Options:
@@ -55,6 +55,7 @@ Examples:
     $(basename "$0") test kubernetes/infrastructure/aws/vpc/test-vpc.yaml
     $(basename "$0") checkpoint "fixed route table issue"
     $(basename "$0") finish "Fix VPC composition RouteTable associations"
+    $(basename "$0") finish "Fix VPC composition RouteTable associations" --non-interactive
 
 EOF
 }
@@ -236,10 +237,11 @@ finish_session() {
     load_session
     
     local final_message="${1}"
+    local non_interactive="${2}"
     
     if [ -z "$final_message" ]; then
         print_error "Please provide a final commit message"
-        echo "Usage: $(basename "$0") finish \"your commit message\""
+        echo "Usage: $(basename "$0") finish \"your commit message\" [--non-interactive]"
         exit 1
     fi
     
@@ -256,16 +258,24 @@ finish_session() {
     else
         print_status "Packaging $commit_count commits into final commit..."
         
-        # Interactive rebase to squash commits
-        print_status "Opening interactive rebase..."
-        print_warning "Change all 'pick' to 'squash' except the first one"
-        read -p "Press Enter to continue..."
-        
-        git rebase -i "$ORIGINAL_BRANCH"
-        
-        # Amend the commit message
-        git commit --amend -m "$final_message"
-        print_success "Created final commit"
+        if [ "$non_interactive" = "--non-interactive" ]; then
+            # Non-interactive squash using soft reset
+            print_status "Non-interactive squashing commits..."
+            git reset --soft "$ORIGINAL_BRANCH"
+            git commit -m "$final_message"
+            print_success "Created final commit (non-interactive squash)"
+        else
+            # Interactive rebase to squash commits
+            print_status "Opening interactive rebase..."
+            print_warning "Change all 'pick' to 'squash' except the first one"
+            read -p "Press Enter to continue..."
+            
+            git rebase -i "$ORIGINAL_BRANCH"
+            
+            # Amend the commit message
+            git commit --amend -m "$final_message"
+            print_success "Created final commit"
+        fi
     fi
     
     # Switch back to original branch
@@ -357,7 +367,7 @@ case "${1:-help}" in
         diff_resources "$2"
         ;;
     finish)
-        finish_session "$2"
+        finish_session "$2" "$3"
         ;;
     abort)
         abort_session

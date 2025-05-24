@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - aws-ebs-csi.yaml
+  - cert-manager.yaml
   - cluster-api.yaml
   - crossplane.yaml
   - flux-system.yaml

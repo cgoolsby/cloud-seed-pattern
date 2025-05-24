@@ -1,0 +1,37 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: jetstack
+  namespace: cert-manager
+spec:
+  interval: 10m
+  url: https://charts.jetstack.io
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: cert-manager
+  namespace: cert-manager
+spec:
+  interval: 15m
+  chart:
+    spec:
+      chart: cert-manager
+      version: "v1.14.3"
+      sourceRef:
+        kind: HelmRepository
+        name: jetstack
+        namespace: cert-manager
+  values:
+    installCRDs: true
+    global:
+      leaderElection:
+        namespace: cert-manager
+    serviceAccount:
+      annotations:
+        eks.amazonaws.com/role-arn: arn:aws:iam::692859948957:role/cert-manager-role
+    securityContext:
+      fsGroup: 1001
+    webhook:
+      securityContext:
+        runAsNonRoot: true

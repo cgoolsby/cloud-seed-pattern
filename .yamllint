@@ -1,0 +1,34 @@
+---
+extends: default
+
+rules:
+  line-length:
+    max: 150
+    level: warning
+  
+  comments:
+    min-spaces-from-content: 1
+  
+  indentation:
+    spaces: 2
+    indent-sequences: consistent
+  
+  truthy:
+    allowed-values: ['true', 'false', 'yes', 'no', 'on', 'off']
+  
+  # Kubernetes often has long lines
+  comments-indentation: disable
+  
+  # Allow both key: value and key:value
+  colons:
+    max-spaces-after: -1
+  
+  # Don't require document start ---
+  document-start: disable
+
+# Ignore auto-generated files
+ignore: |
+  kubernetes/base/flux-system/gotk-components.yaml
+  kubernetes/base/cluster-api/crds/
+  kubernetes/base/crossplane/crds/
+  terraform/
