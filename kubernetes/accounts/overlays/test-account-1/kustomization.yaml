@@ -51,3 +51,9 @@ patches:
       - op: replace
         path: /spec/cidrBlock
         value: "10.2.0.0/16"
+      - op: replace
+        path: /spec/publicSubnetCIDRs
+        value: ["10.2.0.0/24", "10.2.1.0/24", "10.2.2.0/24"]
+      - op: replace
+        path: /spec/privateSubnetCIDRs
+        value: ["10.2.100.0/24", "10.2.101.0/24", "10.2.102.0/24"]
