@@ -97,13 +97,12 @@ EOF
 # Step 5: Create CAPA IAM roles in the account namespace
 print_step "Creating CAPA IAM roles claim..."
 cat <<EOF | kubectl apply -f -
-apiVersion: aws.platform.io/v1alpha1
+apiVersion: iam.example.org/v1alpha1
 kind: CAPAIAMRoles
 metadata:
   name: capa-iam
   namespace: $ACCOUNT_NAMESPACE
 spec:
-  region: us-west-2
   accountId: "$ACCOUNT_ID"
   providerConfigRef:
     name: $ACCOUNT_ALIAS
@@ -120,29 +119,40 @@ print_step "Creating VPC claim..."
 case $ACCOUNT_ENV in
   "production")
     CIDR="10.0.0.0/16"
+    CIDR_OCTET="0"
     ;;
   "staging")
     CIDR="10.1.0.0/16"
+    CIDR_OCTET="1"
     ;;
   "development")
     CIDR="10.2.0.0/16"
+    CIDR_OCTET="2"
     ;;
   *)
     CIDR="10.100.0.0/16"
+    CIDR_OCTET="100"
     ;;
 esac
 
 cat <<EOF | kubectl apply -f -
-apiVersion: aws.platform.io/v1alpha1
+apiVersion: network.example.org/v1alpha1
 kind: VPC
 metadata:
   name: main
   namespace: $ACCOUNT_NAMESPACE
 spec:
   region: us-west-2
-  providerConfigRef:
-    name: $ACCOUNT_ALIAS
+  accountName: $ACCOUNT_ALIAS
   cidrBlock: "$CIDR"
+  publicSubnetCIDRs:
+    - "10.$CIDR_OCTET.0.0/24"
+    - "10.$CIDR_OCTET.1.0/24"
+    - "10.$CIDR_OCTET.2.0/24"
+  privateSubnetCIDRs:
+    - "10.$CIDR_OCTET.100.0/24"
+    - "10.$CIDR_OCTET.101.0/24"
+    - "10.$CIDR_OCTET.102.0/24"
   enableDnsSupport: true
   enableDnsHostnames: true
   tags:

@@ -53,11 +53,17 @@ patches:
       name: main
     patch: |-
       - op: replace
-        path: /spec/providerConfigRef/name
+        path: /spec/accountName
         value: ACCOUNT-ALIAS
       - op: replace
         path: /spec/cidrBlock
         value: "10.X.0.0/16"  # Update X based on environment
+      - op: replace
+        path: /spec/publicSubnetCIDRs
+        value: ["10.X.0.0/24", "10.X.1.0/24", "10.X.2.0/24"]
+      - op: replace
+        path: /spec/privateSubnetCIDRs
+        value: ["10.X.100.0/24", "10.X.101.0/24", "10.X.102.0/24"]
       - op: add
         path: /spec/tags/Name
         value: ACCOUNT-ALIAS-main-vpc

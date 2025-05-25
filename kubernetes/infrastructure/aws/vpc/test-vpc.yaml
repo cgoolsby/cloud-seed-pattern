@@ -1,17 +1,38 @@
+# DEPRECATED: This file is kept for reference only.
+# 
+# VPCs should be created through the accounts structure:
+# kubernetes/accounts/overlays/<account-name>/
+#
+# The accounts workflow provides:
+# - Proper namespace isolation (aws-<account-name>)
+# - Consistent CIDR allocation
+# - Integration with CAPA IAM roles
+# - GitOps-friendly structure
+#
+# To create a VPC for a new account:
+# 1. Run: ./scripts/gitops-account-setup.sh <account-alias>
+# 2. Commit and push the generated files
+# 3. Flux will automatically create the VPC
+#
+# Example VPC configuration is now in:
+# kubernetes/accounts/base/networking/vpc.yaml
+#
 apiVersion: network.example.org/v1alpha1
 kind: VPC
 metadata:
   name: test-vpc
-  namespace: default
+  namespace: aws-test-account-1  # Use proper account namespace
 spec:
-  region: us-east-1
-  cidrBlock: "10.0.0.0/16"
+  region: us-west-2
+  cidrBlock: "10.2.0.0/16"  # Development environment CIDR
+  accountName: test-account-1  # Use actual account alias
+  publicSubnetCIDRs:
+    - "10.2.0.0/24"
+    - "10.2.1.0/24"
+    - "10.2.2.0/24"
+  privateSubnetCIDRs:
+    - "10.2.100.0/24"
+    - "10.2.101.0/24"
+    - "10.2.102.0/24"
   enableDnsSupport: true
   enableDnsHostNames: true
-  accountName: default
-  publicSubnetCIDRs:
-    - "10.0.0.0/24"
-    - "10.0.1.0/24"
-  privateSubnetCIDRs:
-    - "10.0.2.0/24"
-    - "10.0.3.0/24"

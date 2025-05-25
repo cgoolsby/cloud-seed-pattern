@@ -79,20 +79,27 @@ else
 fi
 
 # Determine CIDR based on environment
+# VPC CIDR: 10.X.0.0/16
+# Public subnets: 10.X.0.0/24, 10.X.1.0/24, 10.X.2.0/24
+# Private subnets: 10.X.100.0/24, 10.X.101.0/24, 10.X.102.0/24
 case $ENVIRONMENT in
     "production")
         CIDR="10.0.0.0/16"
+        CIDR_OCTET="0"
         ;;
     "staging")
         CIDR="10.1.0.0/16"
+        CIDR_OCTET="1"
         ;;
     "development")
         CIDR="10.2.0.0/16"
+        CIDR_OCTET="2"
         ;;
     *)
         # Use a random block in 10.x.0.0/16
         RANDOM_OCTET=$((100 + RANDOM % 150))
         CIDR="10.$RANDOM_OCTET.0.0/16"
+        CIDR_OCTET="$RANDOM_OCTET"
         print_info "Using CIDR: $CIDR"
         ;;
 esac
@@ -113,6 +120,12 @@ find "$TARGET_DIR" -type f -name "*.yaml" | while read -r file; do
         -e "s/Account Name/$ACCOUNT_NAME/g" \
         -e "s/ENVIRONMENT/$ENVIRONMENT/g" \
         -e "s|10.X.0.0/16|$CIDR|g" \
+        -e "s|10.X.0.0/24|10.$CIDR_OCTET.0.0/24|g" \
+        -e "s|10.X.1.0/24|10.$CIDR_OCTET.1.0/24|g" \
+        -e "s|10.X.2.0/24|10.$CIDR_OCTET.2.0/24|g" \
+        -e "s|10.X.100.0/24|10.$CIDR_OCTET.100.0/24|g" \
+        -e "s|10.X.101.0/24|10.$CIDR_OCTET.101.0/24|g" \
+        -e "s|10.X.102.0/24|10.$CIDR_OCTET.102.0/24|g" \
         "$file" > "$tmp_file"
     
     mv "$tmp_file" "$file"
