@@ -65,8 +65,13 @@ k8sHyperscalar/
 │   │   ├── cluster-api/        # Cluster API controllers
 │   │   ├── monitoring/         # Prometheus stack
 │   │   └── logging/            # ELK stack
-│   ├── clusters/               # Cluster definitions by environment
-│   └── infrastructure/         # Cloud resources via Crossplane
+│   └── environments/           # Complete environments by account
+│       ├── _template/          # Template for new environments
+│       └── <account-name>/     # All resources for one account
+│           ├── account/        # Namespace, IAM, provider config
+│           ├── networking/     # VPC and network resources
+│           ├── clusters/       # EKS clusters for this account
+│           └── services/       # Account-specific services
 └── scripts/                    # Automation scripts
 ```
 
@@ -117,10 +122,17 @@ spec:
 
 ## Development Workflow
 
-1. **Make Changes**: Edit Kubernetes manifests or Terraform code
+### Creating a New Environment
+1. **Create AWS Account**: Use `terraform/accounts/` to create account
+2. **Setup Environment**: Run `./scripts/gitops-account-setup.sh <account-alias>`
+3. **Commit & Push**: Git commit the new environment configuration
+4. **Create Clusters**: Use `./scripts/create-cluster.sh <account-alias> <cluster-name>`
+5. **Monitor**: Use `flux events --watch` to monitor deployment
+
+### Standard Workflow
+1. **Make Changes**: Edit manifests in the appropriate environment directory
 2. **Commit & Push**: Changes are tracked via Git
 3. **Flux Sync**: Flux automatically applies changes to cluster
-4. **Monitor**: Use `flux events --watch` to monitor reconciliation
-5. **Validate**: Check resource status with kubectl/Crossplane commands
+4. **Validate**: Check resource status with kubectl/Crossplane commands
 
 This platform enables teams to manage complex, multi-environment Kubernetes infrastructure using cloud-native, GitOps best practices.

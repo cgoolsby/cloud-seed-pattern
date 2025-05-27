@@ -1,0 +1,88 @@
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: dev-cluster
+  namespace: default
+  labels:
+    cluster.x-k8s.io/cluster-name: dev-cluster
+    account.aws/alias: test-account-1
+    environment: development
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+        - 192.168.0.0/16
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1beta2
+    kind: AWSManagedControlPlane
+    name: dev-cluster-control-plane
+  infrastructureRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1beta2
+    kind: AWSManagedControlPlane
+    name: dev-cluster-control-plane
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1beta2
+kind: AWSManagedControlPlane
+metadata:
+  name: dev-cluster-control-plane
+  namespace: default
+spec:
+  region: us-west-2
+  version: "v1.28"
+  eksClusterName: dev-cluster
+  roleName: eks-controlplane.cluster-api-provider-aws.sigs.k8s.io
+  identityRef:
+    kind: AWSClusterRoleIdentity
+    name: test-account-1-identity
+  network:
+    vpc:
+      id: vpc-07395d25fd5f76f95  # Will be updated dynamically
+    subnets:
+      - id: subnet-004d13d9dcee0c2ce  # private-a
+      - id: subnet-004ad325108aa10bc  # private-b
+      - id: subnet-0401cd74047103efc  # private-c
+  associateOIDCProvider: true
+  addons:
+  - name: vpc-cni
+    version: v1.16.0-eksbuild.1
+  - name: coredns
+    version: v1.10.1-eksbuild.6
+  - name: kube-proxy
+    version: v1.28.5-eksbuild.2
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachinePool
+metadata:
+  name: dev-cluster-pool-0
+  namespace: default
+spec:
+  clusterName: dev-cluster
+  replicas: 2
+  template:
+    spec:
+      clusterName: dev-cluster
+      bootstrap:
+        dataSecretName: ""
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+        kind: AWSManagedMachinePool
+        name: dev-cluster-pool-0
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+kind: AWSManagedMachinePool
+metadata:
+  name: dev-cluster-pool-0
+  namespace: default
+spec:
+  roleAdditionalPolicies:
+    - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+  roleName: eks-nodegroup.cluster-api-provider-aws.sigs.k8s.io
+  scaling:
+    minSize: 1
+    maxSize: 3
+  instanceType: t3.medium
+  eksNodegroupName: dev-cluster-ng-0
+  subnetIDs:
+    - subnet-004d13d9dcee0c2ce  # private-a
+    - subnet-004ad325108aa10bc  # private-b
+    - subnet-0401cd74047103efc  # private-c

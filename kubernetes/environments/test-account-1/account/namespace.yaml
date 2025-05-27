@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: aws-test-account-1
+  labels:
+    purpose: aws-account-resources
+    account.aws/alias: test-account-1
+    account.aws/environment: development

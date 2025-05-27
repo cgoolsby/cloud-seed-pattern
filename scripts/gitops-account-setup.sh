@@ -32,9 +32,9 @@ if [ $# -eq 0 ]; then
 fi
 
 ACCOUNT_ALIAS=$1
-ACCOUNTS_DIR="kubernetes/accounts/overlays"
-TEMPLATE_DIR="$ACCOUNTS_DIR/_template"
-TARGET_DIR="$ACCOUNTS_DIR/$ACCOUNT_ALIAS"
+ENVIRONMENTS_DIR="kubernetes/environments"
+TEMPLATE_DIR="$ENVIRONMENTS_DIR/_template"
+TARGET_DIR="$ENVIRONMENTS_DIR/$ACCOUNT_ALIAS"
 
 # Check if we're in the root of the repo
 if [ ! -f "scripts/gitops-account-setup.sh" ]; then
@@ -131,17 +131,20 @@ find "$TARGET_DIR" -type f -name "*.yaml" | while read -r file; do
     mv "$tmp_file" "$file"
 done
 
-# Update the overlays kustomization.yaml to include the new account
-print_step "Adding account to overlays kustomization..."
-if ! grep -q "  - $ACCOUNT_ALIAS" "$ACCOUNTS_DIR/kustomization.yaml"; then
-    # Add the new account before the comment line if it exists
-    sed -i.bak "/# - demo-prod/i\\
-  - $ACCOUNT_ALIAS" "$ACCOUNTS_DIR/kustomization.yaml" || \
-    # If no comment exists, just append
-    echo "  - $ACCOUNT_ALIAS" >> "$ACCOUNTS_DIR/kustomization.yaml"
-    
-    # Remove backup file
-    rm -f "$ACCOUNTS_DIR/kustomization.yaml.bak"
+# Update the environments kustomization.yaml to include the new account
+print_step "Adding account to environments kustomization..."
+if [ ! -f "$ENVIRONMENTS_DIR/kustomization.yaml" ]; then
+    # Create the environments kustomization if it doesn't exist
+    cat > "$ENVIRONMENTS_DIR/kustomization.yaml" <<EOF
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - $ACCOUNT_ALIAS
+EOF
+elif ! grep -q "  - $ACCOUNT_ALIAS" "$ENVIRONMENTS_DIR/kustomization.yaml"; then
+    # Add the new account to resources
+    echo "  - $ACCOUNT_ALIAS" >> "$ENVIRONMENTS_DIR/kustomization.yaml"
 fi
 
 # Show summary
@@ -153,8 +156,8 @@ echo "Next steps:"
 echo "1. Review and adjust the configuration files if needed"
 echo "2. Commit and push the changes:"
 echo "   git add $TARGET_DIR"
-echo "   git add $ACCOUNTS_DIR/kustomization.yaml"
-echo "   git commit -m \"Add GitOps configuration for $ACCOUNT_ALIAS account\""
+echo "   git add $ENVIRONMENTS_DIR/kustomization.yaml"
+echo "   git commit -m \"Add environment configuration for $ACCOUNT_ALIAS\""
 echo "   git push"
 echo ""
 echo "3. Flux will automatically create:"

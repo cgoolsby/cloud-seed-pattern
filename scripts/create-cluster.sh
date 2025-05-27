@@ -71,15 +71,21 @@ print_info "Using VPC: $VPC_ID"
 
 # Step 4: Get subnet IDs
 print_step "Getting subnet information..."
-# For now, we'll need to get subnets from the VPC status once the composition is updated
-# This is a simplified version - you'd want to get actual subnet IDs from the VPC status
-PRIVATE_SUBNETS=$(kubectl get vpc -n $ACCOUNT_NAMESPACE main -o jsonpath='{.status.atProvider.privateSubnetIds}' 2>/dev/null || echo "")
-PUBLIC_SUBNETS=$(kubectl get vpc -n $ACCOUNT_NAMESPACE main -o jsonpath='{.status.atProvider.publicSubnetIds}' 2>/dev/null || echo "")
+# Get private subnet IDs from the actual subnet resources
+PRIVATE_SUBNET_IDS=$(kubectl get subnets -A -l crossplane.io/claim-namespace=$ACCOUNT_NAMESPACE,type=private -o jsonpath='{.items[*].status.atProvider.subnetId}')
+PUBLIC_SUBNET_IDS=$(kubectl get subnets -A -l crossplane.io/claim-namespace=$ACCOUNT_NAMESPACE,type=public -o jsonpath='{.items[*].status.atProvider.subnetId}')
 
-if [ -z "$PRIVATE_SUBNETS" ]; then
-    print_warning "No subnet information found in VPC status"
-    print_info "You may need to manually specify subnet IDs in the cluster manifest"
+if [ -z "$PRIVATE_SUBNET_IDS" ]; then
+    print_error "No private subnets found for account $ACCOUNT_ALIAS"
+    exit 1
 fi
+
+# Convert space-separated list to array
+IFS=' ' read -r -a PRIVATE_SUBNET_ARRAY <<< "$PRIVATE_SUBNET_IDS"
+IFS=' ' read -r -a PUBLIC_SUBNET_ARRAY <<< "$PUBLIC_SUBNET_IDS"
+
+print_info "Found ${#PRIVATE_SUBNET_ARRAY[@]} private subnets"
+print_info "Found ${#PUBLIC_SUBNET_ARRAY[@]} public subnets"
 
 # Step 5: Create cluster namespace if it doesn't exist
 if [ "$CLUSTER_NAMESPACE" != "default" ]; then
@@ -128,6 +134,8 @@ spec:
   network:
     vpc:
       id: $VPC_ID
+    subnets:
+$(for subnet in "${PRIVATE_SUBNET_ARRAY[@]}"; do echo "      - id: $subnet"; done)
   associateOIDCProvider: true
   addons:
   - name: vpc-cni
@@ -169,8 +177,8 @@ spec:
     maxSize: 3
   instanceType: t3.medium
   eksNodegroupName: $CLUSTER_NAME-ng-0
-  # You may need to specify availabilityZones or subnetIDs here
-  # depending on how the VPC composition exposes subnet information
+  subnetIDs:
+$(for subnet in "${PRIVATE_SUBNET_ARRAY[@]}"; do echo "    - $subnet"; done)
 EOF
 
 # Step 7: Wait for cluster to start provisioning

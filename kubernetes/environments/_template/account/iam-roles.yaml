@@ -1,0 +1,13 @@
+apiVersion: iam.example.org/v1alpha1
+kind: CAPAIAMRoles
+metadata:
+  name: capa-iam
+  namespace: aws-ACCOUNT-ALIAS
+spec:
+  accountId: "ACCOUNT-ID"
+  providerConfigRef:
+    name: ACCOUNT-ALIAS
+  tags:
+    Environment: ENVIRONMENT
+    ManagedBy: crossplane
+    AccountAlias: ACCOUNT-ALIAS

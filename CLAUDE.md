@@ -152,8 +152,10 @@ pre-commit run
 - **terraform/eks/**: Terraform code for bootstrapping the management EKS cluster with IRSA
 - **terraform/accounts/**: Terraform module for creating AWS accounts and ConfigMaps
 - **kubernetes/base/**: Core platform components (Flux, Crossplane, Cluster API)
-- **kubernetes/clusters/**: Cluster definitions organized by environment (dev/staging/prod)
-- **kubernetes/infrastructure/**: Cloud infrastructure resources managed by Crossplane
+- **kubernetes/environments/**: Complete environments grouped by account
+  - Each account directory contains: account/, networking/, clusters/, services/
+  - Everything for an account is in one place for easy management
+- **kubernetes/infrastructure/**: Shared infrastructure resources (deprecated, use environments/)
 
 ### Key Components
 1. **Flux CD**: Watches this Git repository and applies changes to the cluster
@@ -169,17 +171,34 @@ pre-commit run
 4. **Resource Provisioning**: Use account alias in Crossplane resources (e.g., `accountName: dev-account`)
 
 ### Resource Creation Pattern
-When creating new clusters or infrastructure:
-1. Copy from templates in `clusters/templates/` or `infrastructure/templates/`
-2. Replace placeholder variables (e.g., ${CLUSTER_NAME}, ${ACCOUNT_NAME})
-3. Add the new file to the corresponding kustomization.yaml
-4. Commit and push - Flux will automatically apply
+When creating new environments or clusters:
+1. Use `./scripts/gitops-account-setup.sh <account-alias>` to create a new environment
+2. For clusters, use `./scripts/create-cluster.sh <account-alias> <cluster-name>`
+3. Templates are in `environments/_template/`
+4. All resources for an account are grouped in `environments/<account-name>/`
+5. Commit and push - Flux will automatically apply
 
 ### IRSA Authentication Setup
 - **Management Account**: Uses IRSA with CrossplaneAWSProviderRole
 - **Target Accounts**: Uses OrganizationAccountAccessRole for cross-account access
 - **Wildcard Trust Policy**: Handles dynamic Crossplane service account names (provider-aws-*)
 - **No Static Credentials**: All authentication uses temporary tokens via IRSA
+
+### Environment and Cluster Management
+```bash
+# Create a new environment (account + networking)
+./scripts/gitops-account-setup.sh <account-alias>
+
+# Create a cluster in an existing environment
+./scripts/create-cluster.sh <account-alias> <cluster-name>
+
+# Destroy a cluster
+./scripts/destroy-cluster.sh <cluster-name>
+
+# Check environment status
+kubectl get all -n aws-<account-alias>
+kubectl get vpc,subnets -n aws-<account-alias>
+```
 
 ## Troubleshooting
 

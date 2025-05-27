@@ -1,0 +1,13 @@
+apiVersion: iam.example.org/v1alpha1
+kind: CAPAIAMRoles
+metadata:
+  name: capa-iam
+  namespace: aws-test-account-1
+spec:
+  accountId: "137457118074"
+  providerConfigRef:
+    name: test-account-1
+  tags:
+    Environment: development
+    ManagedBy: crossplane
+    AccountAlias: test-account-1
