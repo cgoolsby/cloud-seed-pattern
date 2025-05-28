@@ -1,0 +1,88 @@
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: ${CLUSTER_NAME}
+  namespace: ${CLUSTER_NAMESPACE:=default}
+  labels:
+    cluster.x-k8s.io/cluster-name: ${CLUSTER_NAME}
+    account.aws/alias: ${ACCOUNT_ALIAS}
+    environment: ${ENVIRONMENT}
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+        - 192.168.0.0/16
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1beta2
+    kind: AWSManagedControlPlane
+    name: ${CLUSTER_NAME}-control-plane
+  infrastructureRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1beta2
+    kind: AWSManagedControlPlane
+    name: ${CLUSTER_NAME}-control-plane
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1beta2
+kind: AWSManagedControlPlane
+metadata:
+  name: ${CLUSTER_NAME}-control-plane
+  namespace: ${CLUSTER_NAMESPACE:=default}
+spec:
+  region: ${REGION}
+  version: ${EKS_VERSION}
+  eksClusterName: ${CLUSTER_NAME}
+  roleName: eks-controlplane.cluster-api-provider-aws.sigs.k8s.io
+  identityRef:
+    kind: AWSClusterRoleIdentity
+    name: ${ACCOUNT_ALIAS}-identity
+  network:
+    vpc:
+      id: ${VPC_ID}
+    subnets:
+      - id: ${PRIVATE_SUBNET_A}
+      - id: ${PRIVATE_SUBNET_B}
+      - id: ${PRIVATE_SUBNET_C}
+  associateOIDCProvider: true
+  addons:
+  - name: vpc-cni
+    version: ${VPC_CNI_VERSION}
+  - name: coredns
+    version: ${COREDNS_VERSION}
+  - name: kube-proxy
+    version: ${KUBE_PROXY_VERSION}
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachinePool
+metadata:
+  name: ${CLUSTER_NAME}-pool-0
+  namespace: ${CLUSTER_NAMESPACE:=default}
+spec:
+  clusterName: ${CLUSTER_NAME}
+  replicas: ${NODE_DESIRED_SIZE}
+  template:
+    spec:
+      clusterName: ${CLUSTER_NAME}
+      bootstrap:
+        dataSecretName: ""
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+        kind: AWSManagedMachinePool
+        name: ${CLUSTER_NAME}-pool-0
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+kind: AWSManagedMachinePool
+metadata:
+  name: ${CLUSTER_NAME}-pool-0
+  namespace: ${CLUSTER_NAMESPACE:=default}
+spec:
+  roleAdditionalPolicies:
+    - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+  roleName: eks-nodegroup.cluster-api-provider-aws.sigs.k8s.io
+  scaling:
+    minSize: ${NODE_MIN_SIZE}
+    maxSize: ${NODE_MAX_SIZE}
+  instanceType: ${NODE_INSTANCE_TYPE}
+  eksNodegroupName: ${CLUSTER_NAME}-ng-0
+  subnetIDs:
+    - ${PRIVATE_SUBNET_A}
+    - ${PRIVATE_SUBNET_B}
+    - ${PRIVATE_SUBNET_C}

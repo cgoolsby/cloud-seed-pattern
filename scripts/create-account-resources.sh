@@ -97,7 +97,7 @@ EOF
 # Step 5: Create CAPA IAM roles in the account namespace
 print_step "Creating CAPA IAM roles claim..."
 cat <<EOF | kubectl apply -f -
-apiVersion: iam.example.org/v1alpha1
+apiVersion: aws.platform.io/v1alpha1
 kind: CAPAIAMRoles
 metadata:
   name: capa-iam

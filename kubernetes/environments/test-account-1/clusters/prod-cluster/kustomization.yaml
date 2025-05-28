@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../../base/cluster-templates/eks-cluster.yaml
+
+# Production cluster configuration
+configMapGenerator:
+  - name: prod-cluster-values
+    namespace: flux-system
+    literals:
+      - CLUSTER_NAME=prod-cluster
+      - CLUSTER_NAMESPACE=default
+      # Override defaults for production
+      - NODE_INSTANCE_TYPE=t3.large
+      - NODE_MIN_SIZE=3
+      - NODE_MAX_SIZE=10
+      - NODE_DESIRED_SIZE=3

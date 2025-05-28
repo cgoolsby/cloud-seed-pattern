@@ -1,4 +1,4 @@
-apiVersion: iam.example.org/v1alpha1
+apiVersion: aws.platform.io/v1alpha1
 kind: CAPAIAMRoles
 metadata:
   name: capa-iam
