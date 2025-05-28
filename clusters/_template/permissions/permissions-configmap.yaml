@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${CLUSTER_NAME}-permissions
+  namespace: ${ACCOUNT_NAMESPACE}
+data:
+  CLUSTER_NAME: ${CLUSTER_NAME}
+  ACCOUNT_ID: ${ACCOUNT_ID}
+  ACCOUNT_NAME: ${ACCOUNT_NAME}
+  CLUSTER_ROLE_IDENTITY: ${CLUSTER_NAME}-cluster-role-identity
+  CONTROL_PLANE_ROLE_NAME: ${CLUSTER_NAME}.eks-controlplane.cluster-api-provider-aws.sigs.k8s.io
+  NODE_ROLE_NAME: ${CLUSTER_NAME}.nodes.cluster-api-provider-aws.sigs.k8s.io
+  FARGATE_ROLE_NAME: ${CLUSTER_NAME}.eks-fargate.cluster-api-provider-aws.sigs.k8s.io
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${CLUSTER_NAME}-iam-arns
+  namespace: ${ACCOUNT_NAMESPACE}
+data:
+  control.plane.role.arn: ""  # Will be populated by CAPAIAMRoles resource
+  node.role.arn: ""           # Will be populated by CAPAIAMRoles resource
+  fargate.role.arn: ""        # Will be populated by CAPAIAMRoles resource

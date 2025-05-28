@@ -1,0 +1,23 @@
+apiVersion: iam.example.org/v1alpha1
+kind: CAPAIAMRoles
+metadata:
+  name: ${CLUSTER_NAME}-capa-iam-roles
+  namespace: ${ACCOUNT_NAMESPACE}
+spec:
+  parameters:
+    accountName: ${ACCOUNT_NAME}
+    region: ${REGION}
+    clusterName: ${CLUSTER_NAME}
+    iamPrefix: ${CLUSTER_NAME}
+    eksServicePrincipal: eks.amazonaws.com
+    tags:
+      Environment: ${ENVIRONMENT}
+      Cluster: ${CLUSTER_NAME}
+      ManagedBy: crossplane
+  compositionRef:
+    name: capa-iam-composition
+  providerConfigRef:
+    name: ${ACCOUNT_NAME}
+  writeConnectionSecretToRef:
+    name: ${CLUSTER_NAME}-capa-iam-connection
+    namespace: ${ACCOUNT_NAMESPACE}

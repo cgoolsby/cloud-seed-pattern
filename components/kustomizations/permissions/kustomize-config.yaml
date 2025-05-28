@@ -1,0 +1,35 @@
+nameReference:
+  - kind: ConfigMap
+    fieldSpecs:
+      - kind: CAPAIAMRoles
+        path: spec/parameters/configMapRef/name
+      - kind: CAPAIAMRoles
+        path: spec/writeConnectionSecretToRef/name
+
+varReference:
+  - kind: CAPAIAMRoles
+    path: metadata/name
+  - kind: CAPAIAMRoles
+    path: metadata/namespace
+  - kind: CAPAIAMRoles
+    path: spec/parameters/accountName
+  - kind: CAPAIAMRoles
+    path: spec/parameters/region
+  - kind: CAPAIAMRoles
+    path: spec/parameters/clusterName
+  - kind: CAPAIAMRoles
+    path: spec/parameters/iamPrefix
+  - kind: CAPAIAMRoles
+    path: spec/parameters/tags
+  - kind: CAPAIAMRoles
+    path: spec/providerConfigRef/name
+  - kind: CAPAIAMRoles
+    path: spec/writeConnectionSecretToRef/namespace
+  - kind: AWSClusterRoleIdentity
+    path: metadata/name
+  - kind: AWSClusterRoleIdentity
+    path: metadata/namespace
+  - kind: AWSClusterRoleIdentity
+    path: spec/allowedNamespaces/list
+  - kind: AWSClusterRoleIdentity
+    path: spec/roleARN

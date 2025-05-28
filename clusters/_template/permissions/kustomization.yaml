@@ -1,0 +1,45 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - capa-iam-roles.yaml
+  - cluster-role-identity.yaml
+  - permissions-configmap.yaml
+
+configMapGenerator:
+  - name: cluster-permissions
+    namespace: ${ACCOUNT_NAMESPACE}
+    literals:
+      - CLUSTER_NAME=${CLUSTER_NAME}
+      - ACCOUNT_NAME=${ACCOUNT_NAME}
+      - ACCOUNT_ID=${ACCOUNT_ID}
+
+replacements:
+  - source:
+      kind: ConfigMap
+      name: account-info
+      fieldPath: data.ACCOUNT_NAME
+    targets:
+      - select:
+          kind: CAPAIAMRoles
+        fieldPaths:
+          - spec.parameters.accountName
+      - select:
+          kind: AWSClusterRoleIdentity
+        fieldPaths:
+          - spec.roleARN
+        options:
+          delimiter: ':'
+          index: 4
+  - source:
+      kind: ConfigMap
+      name: account-info
+      fieldPath: data.ACCOUNT_ID
+    targets:
+      - select:
+          kind: AWSClusterRoleIdentity
+        fieldPaths:
+          - spec.roleARN
+        options:
+          delimiter: ':'
+          index: 4

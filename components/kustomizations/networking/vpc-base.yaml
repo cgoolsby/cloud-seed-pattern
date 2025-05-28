@@ -1,0 +1,14 @@
+apiVersion: network.example.org/v1alpha1
+kind: VPC
+metadata:
+  name: vpc-base
+spec:
+  parameters:
+    enableDnsSupport: true
+    enableDnsHostnames: true
+    createNatGateways: true
+    singleNatGateway: false
+    tags:
+      ManagedBy: crossplane
+  compositionRef:
+    name: vpc-composition

@@ -1,0 +1,33 @@
+nameReference:
+  - kind: ConfigMap
+    fieldSpecs:
+      - kind: VPC
+        path: spec/parameters/configMapRef/name
+      - kind: VPC
+        path: spec/writeConnectionSecretToRef/name
+
+varReference:
+  - kind: VPC
+    path: metadata/name
+  - kind: VPC
+    path: metadata/namespace
+  - kind: VPC
+    path: spec/parameters/name
+  - kind: VPC
+    path: spec/parameters/region
+  - kind: VPC
+    path: spec/parameters/accountName
+  - kind: VPC
+    path: spec/parameters/cidrBlock
+  - kind: VPC
+    path: spec/parameters/publicSubnetCidrs
+  - kind: VPC
+    path: spec/parameters/privateSubnetCidrs
+  - kind: VPC
+    path: spec/parameters/availabilityZones
+  - kind: VPC
+    path: spec/parameters/tags
+  - kind: VPC
+    path: spec/providerConfigRef/name
+  - kind: VPC
+    path: spec/writeConnectionSecretToRef/namespace
