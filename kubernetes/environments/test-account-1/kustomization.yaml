@@ -5,5 +5,4 @@ resources:
   - flux-kustomization.yaml
   - account
   - networking
-  # Clusters are deployed separately after networking is ready
-  # - clusters/dev-cluster
+  - clusters  # This will create the Flux kustomizations for clusters
