@@ -5,7 +5,7 @@ set -euo pipefail
 GITHUB_OWNER="cgoolsby"
 REPO_NAME="k8sHyperscalar"
 BRANCH="main"
-FLUX_PATH="kubernetes/base"
+FLUX_PATH="components/helmrelease/flux-system"
 GITHUB_TOKEN=${GITHUB_TOKEN:-""}
 
 # Help message

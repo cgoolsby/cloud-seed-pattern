@@ -1,0 +1,15 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: ${CLUSTER_NAME}-cluster-api
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  path: ./components/helmrelease/cluster-api
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  targetNamespace: ${ACCOUNT_NAMESPACE}
+  dependsOn:
+    - name: ${CLUSTER_NAME}

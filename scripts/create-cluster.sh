@@ -45,6 +45,7 @@ Options:
     -k, --k8s-version   Kubernetes version (default: 1.28)
     -n, --node-count    Number of worker nodes (default: 2)
     -t, --node-type     EC2 instance type for nodes (default: t3.medium)
+    -m, --management    Create as a management cluster with Crossplane and Cluster API
     -h, --help          Show this help message
 
 Examples:
@@ -56,6 +57,9 @@ Examples:
 
     # Create a cluster in a different region
     $0 test-account-1 regional-cluster -r us-west-2 -v 10.1.0.0/16
+
+    # Create a management cluster with Crossplane and Cluster API
+    $0 test-account-1 mgmt-cluster --management
 EOF
 }
 
@@ -66,6 +70,7 @@ VPC_CIDR="10.0.0.0/16"
 K8S_VERSION="1.28"
 NODE_COUNT="2"
 NODE_TYPE="t3.medium"
+MANAGEMENT="false"
 
 # Parse command line arguments
 if [[ $# -lt 2 ]]; then
@@ -104,6 +109,10 @@ while [[ $# -gt 0 ]]; do
         -t|--node-type)
             NODE_TYPE="$2"
             shift 2
+            ;;
+        -m|--management)
+            MANAGEMENT="true"
+            shift
             ;;
         -h|--help)
             usage
@@ -167,7 +176,11 @@ export K8S_VERSION NODE_COUNT NODE_TYPE
 
 # Create cluster directory structure
 print_info "Creating cluster directory structure..."
-mkdir -p "${CLUSTER_DIR}"/{definition,networking,permissions,system}
+if [[ "$MANAGEMENT" == "true" ]]; then
+    mkdir -p "${CLUSTER_DIR}"/{definition,networking,permissions,system,management}
+else
+    mkdir -p "${CLUSTER_DIR}"/{definition,networking,permissions,system}
+fi
 
 # Create cluster configuration file
 print_info "Creating cluster configuration..."
@@ -175,7 +188,11 @@ substitute_template "${TEMPLATE_DIR}/cluster-config.env.tmpl" "${CLUSTER_DIR}/cl
 
 # Create main kustomization.yaml
 print_info "Creating main kustomization file..."
-substitute_template "${TEMPLATE_DIR}/cluster-kustomization.yaml.tmpl" "${CLUSTER_DIR}/kustomization.yaml"
+if [[ "$MANAGEMENT" == "true" ]]; then
+    substitute_template "${TEMPLATE_DIR}/cluster-kustomization-mgmt.yaml.tmpl" "${CLUSTER_DIR}/kustomization.yaml"
+else
+    substitute_template "${TEMPLATE_DIR}/cluster-kustomization.yaml.tmpl" "${CLUSTER_DIR}/kustomization.yaml"
+fi
 
 # Create networking resources
 print_info "Setting up networking configuration..."
@@ -194,6 +211,14 @@ print_info "Creating system components placeholder..."
 cp -r clusters/_template/system/* "${CLUSTER_DIR}/system/" 2>/dev/null || {
     substitute_template "${TEMPLATE_DIR}/system-kustomization.yaml.tmpl" "${CLUSTER_DIR}/system/kustomization.yaml"
 }
+
+# Create management components if requested
+if [[ "$MANAGEMENT" == "true" ]]; then
+    print_info "Creating management components..."
+    substitute_template "${TEMPLATE_DIR}/management-kustomization.yaml.tmpl" "${CLUSTER_DIR}/management/kustomization.yaml"
+    substitute_template "${TEMPLATE_DIR}/management-crossplane.yaml.tmpl" "${CLUSTER_DIR}/management/crossplane.yaml"
+    substitute_template "${TEMPLATE_DIR}/management-cluster-api.yaml.tmpl" "${CLUSTER_DIR}/management/cluster-api.yaml"
+fi
 
 # Create Flux Kustomization for the cluster
 print_info "Creating Flux Kustomization..."
@@ -222,6 +247,9 @@ echo "  Account: ${ACCOUNT_NAME}"
 echo "  Namespace: ${ACCOUNT_NAMESPACE}"
 echo "  Region: ${REGION}"
 echo "  VPC CIDR: ${VPC_CIDR}"
+if [[ "$MANAGEMENT" == "true" ]]; then
+    echo "  Type: Management Cluster (with Crossplane & Cluster API)"
+fi
 echo ""
 echo "Next steps:"
 echo "1. Review and customize the configuration in ${CLUSTER_DIR}/"
