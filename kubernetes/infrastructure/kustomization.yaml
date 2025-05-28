@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - aws
-  - networking
+  # Enable when networking resources are defined
+  # - networking
   # Enable services as they are defined
   # - services
