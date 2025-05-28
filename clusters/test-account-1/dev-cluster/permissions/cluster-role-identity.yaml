@@ -1,0 +1,13 @@
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+kind: AWSClusterRoleIdentity
+metadata:
+  name: ${CLUSTER_NAME}-cluster-role-identity
+  namespace: ${ACCOUNT_NAMESPACE}
+spec:
+  allowedNamespaces:
+    list:
+      - ${ACCOUNT_NAMESPACE}
+  roleARN: arn:aws:iam::${ACCOUNT_ID}:role/OrganizationAccountAccessRole
+  sourceIdentityRef:
+    kind: AWSClusterControllerIdentity
+    name: default

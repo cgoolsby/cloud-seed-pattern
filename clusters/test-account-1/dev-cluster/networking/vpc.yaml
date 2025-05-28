@@ -1,0 +1,36 @@
+apiVersion: network.example.org/v1alpha1
+kind: VPC
+metadata:
+  name: ${CLUSTER_NAME}-vpc
+  namespace: ${ACCOUNT_NAMESPACE}
+spec:
+  parameters:
+    name: ${CLUSTER_NAME}-vpc
+    region: ${REGION}
+    accountName: ${ACCOUNT_NAME}
+    cidrBlock: ${VPC_CIDR}
+    enableDnsSupport: true
+    enableDnsHostnames: true
+    publicSubnetCidrs:
+      - ${PUBLIC_SUBNET_A_CIDR}
+      - ${PUBLIC_SUBNET_B_CIDR}
+    privateSubnetCidrs:
+      - ${PRIVATE_SUBNET_A_CIDR}
+      - ${PRIVATE_SUBNET_B_CIDR}
+    availabilityZones:
+      - ${REGION}a
+      - ${REGION}b
+    createNatGateways: true
+    singleNatGateway: false
+    tags:
+      Name: ${CLUSTER_NAME}-vpc
+      Environment: ${ENVIRONMENT}
+      ManagedBy: crossplane
+      kubernetes.io/cluster/${CLUSTER_NAME}: shared
+  compositionRef:
+    name: vpc-composition
+  providerConfigRef:
+    name: ${ACCOUNT_NAME}
+  writeConnectionSecretToRef:
+    name: ${CLUSTER_NAME}-vpc-connection
+    namespace: ${ACCOUNT_NAMESPACE}

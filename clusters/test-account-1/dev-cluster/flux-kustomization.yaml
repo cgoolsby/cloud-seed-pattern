@@ -1,0 +1,22 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: dev-cluster
+  namespace: flux-system
+spec:
+  interval: 10m
+  path: ./clusters/test-account-1/dev-cluster
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  dependsOn:
+    - name: test-account-1-account
+  postBuild:
+    substituteFrom:
+      - kind: ConfigMap
+        name: account-info
+        namespace: aws-test-account-1
+      - kind: ConfigMap
+        name: dev-cluster-config
+        namespace: aws-test-account-1
