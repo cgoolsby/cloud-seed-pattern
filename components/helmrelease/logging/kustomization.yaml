@@ -5,6 +5,7 @@ namespace: logging
 
 resources:
   - namespace.yaml
+  - helmrepository.yaml
   - elasticsearch.yaml
   - kibana.yaml
   - fluent-bit.yaml

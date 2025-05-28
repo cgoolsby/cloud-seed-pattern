@@ -5,6 +5,7 @@ namespace: monitoring
 
 resources:
   - namespace.yaml
+  - helmrepository.yaml
   - release.yaml
 
 commonLabels:
