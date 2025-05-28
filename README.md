@@ -126,13 +126,37 @@ spec:
 1. **Create AWS Account**: Use `terraform/accounts/` to create account
 2. **Setup Environment**: Run `./scripts/gitops-account-setup.sh <account-alias>`
 3. **Commit & Push**: Git commit the new environment configuration
-4. **Create Clusters**: Use `./scripts/create-cluster.sh <account-alias> <cluster-name>`
-5. **Monitor**: Use `flux events --watch` to monitor deployment
+4. **Monitor**: Use `flux events --watch` to monitor deployment
+
+### Cluster Management (GitOps)
+All cluster operations should go through pull requests for proper review and audit:
+
+1. **Create Cluster**: 
+   ```bash
+   ./scripts/gitops-create-cluster.sh <account-alias> <cluster-name> [namespace]
+   git push origin <branch-name>
+   gh pr create --title "Add EKS cluster: <cluster-name>"
+   ```
+
+2. **Destroy Cluster**: 
+   ```bash
+   ./scripts/gitops-destroy-cluster.sh <account-alias> <cluster-name>
+   git push origin <branch-name>
+   gh pr create --title "Remove EKS cluster: <cluster-name>"
+   ```
+
+3. **Monitor Deployment**:
+   ```bash
+   flux get kustomization -n aws-<account-alias> <cluster-name>
+   kubectl get cluster -A | grep <cluster-name>
+   ```
 
 ### Standard Workflow
 1. **Make Changes**: Edit manifests in the appropriate environment directory
-2. **Commit & Push**: Changes are tracked via Git
-3. **Flux Sync**: Flux automatically applies changes to cluster
-4. **Validate**: Check resource status with kubectl/Crossplane commands
+2. **Create PR**: Push changes to a feature branch and create PR
+3. **Review**: Team reviews infrastructure changes
+4. **Merge**: After approval, merge to main branch
+5. **Flux Sync**: Flux automatically applies changes to cluster
+6. **Validate**: Check resource status with kubectl/Crossplane commands
 
 This platform enables teams to manage complex, multi-environment Kubernetes infrastructure using cloud-native, GitOps best practices.

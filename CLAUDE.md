@@ -185,19 +185,45 @@ When creating new environments or clusters:
 - **No Static Credentials**: All authentication uses temporary tokens via IRSA
 
 ### Environment and Cluster Management
+
+#### GitOps Workflow (Recommended)
+All cluster operations should go through pull requests for proper review and audit trail:
+
 ```bash
 # Create a new environment (account + networking)
 ./scripts/gitops-account-setup.sh <account-alias>
 
-# Create a cluster in an existing environment
-./scripts/create-cluster.sh <account-alias> <cluster-name>
+# Create a cluster via GitOps (generates PR)
+./scripts/gitops-create-cluster.sh <account-alias> <cluster-name> [namespace]
 
-# Destroy a cluster
-./scripts/destroy-cluster.sh <cluster-name>
+# Destroy a cluster via GitOps (generates PR)
+./scripts/gitops-destroy-cluster.sh <account-alias> <cluster-name>
 
 # Check environment status
 kubectl get all -n aws-<account-alias>
 kubectl get vpc,subnets -n aws-<account-alias>
+
+# Monitor cluster deployment after PR merge
+flux get kustomization -n aws-<account-alias> <cluster-name>
+kubectl get cluster -A | grep <cluster-name>
+```
+
+The GitOps workflow:
+1. **Create**: Generates cluster manifests and creates a PR branch
+2. **Review**: Team reviews the changes in the PR
+3. **Deploy**: After merge, Flux automatically creates the cluster
+4. **Monitor**: Use Flux commands to track deployment progress
+5. **Destroy**: Similar process but removes the cluster configuration
+
+#### Direct Apply Workflow (Development Only)
+For development and testing only - avoid in production:
+
+```bash
+# Create a cluster directly (bypasses GitOps)
+./scripts/create-cluster.sh <account-alias> <cluster-name>
+
+# Destroy a cluster directly
+./scripts/destroy-cluster.sh <cluster-name>
 ```
 
 ## Troubleshooting
