@@ -1,0 +1,11 @@
+apiVersion: iam.example.org/v1alpha1
+kind: CAPAIAMRoles
+metadata:
+  name: capa-iam-base
+spec:
+  parameters:
+    eksServicePrincipal: eks.amazonaws.com
+    tags:
+      ManagedBy: crossplane
+  compositionRef:
+    name: capa-iam-composition

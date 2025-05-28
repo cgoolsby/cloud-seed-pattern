@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${CLUSTER_NAME}-networking
+  namespace: ${ACCOUNT_NAMESPACE}
+data:
+  CLUSTER_NAME: ${CLUSTER_NAME}
+  VPC_ID: ""  # Will be populated by VPC resource
+  VPC_CIDR: ${VPC_CIDR}
+  REGION: ${REGION}
+  PRIVATE_SUBNET_A_ID: ""  # Will be populated by VPC resource
+  PRIVATE_SUBNET_B_ID: ""  # Will be populated by VPC resource
+  PUBLIC_SUBNET_A_ID: ""   # Will be populated by VPC resource
+  PUBLIC_SUBNET_B_ID: ""   # Will be populated by VPC resource
+  AVAILABILITY_ZONE_A: ${REGION}a
+  AVAILABILITY_ZONE_B: ${REGION}b
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${CLUSTER_NAME}-networking-values
+  namespace: ${ACCOUNT_NAMESPACE}
+data:
+  vpc.cidr: ${VPC_CIDR}
+  subnets.public.a.cidr: ${PUBLIC_SUBNET_A_CIDR}
+  subnets.public.b.cidr: ${PUBLIC_SUBNET_B_CIDR}
+  subnets.private.a.cidr: ${PRIVATE_SUBNET_A_CIDR}
+  subnets.private.b.cidr: ${PRIVATE_SUBNET_B_CIDR}
