@@ -76,6 +76,34 @@ PUBLIC_SUBNET_C=$(kubectl get subnets -A -l crossplane.io/claim-namespace=$ACCOU
 
 print_step "Generating cluster values ConfigMap..."
 
+# Create the ConfigMap in the cluster first if it doesn't exist
+kubectl create configmap cluster-values -n flux-system --dry-run=client -o yaml | kubectl apply -f -
+
+# Update the ConfigMap with current values
+kubectl create configmap cluster-values -n flux-system \
+  --from-literal=ACCOUNT_ALIAS="$ACCOUNT_ALIAS" \
+  --from-literal=ACCOUNT_ID="$ACCOUNT_ID" \
+  --from-literal=ENVIRONMENT="$ENVIRONMENT" \
+  --from-literal=VPC_ID="$VPC_ID" \
+  --from-literal=REGION="$REGION" \
+  --from-literal=PRIVATE_SUBNET_A="$PRIVATE_SUBNET_A" \
+  --from-literal=PRIVATE_SUBNET_B="$PRIVATE_SUBNET_B" \
+  --from-literal=PRIVATE_SUBNET_C="$PRIVATE_SUBNET_C" \
+  --from-literal=PUBLIC_SUBNET_A="$PUBLIC_SUBNET_A" \
+  --from-literal=PUBLIC_SUBNET_B="$PUBLIC_SUBNET_B" \
+  --from-literal=PUBLIC_SUBNET_C="$PUBLIC_SUBNET_C" \
+  --from-literal=EKS_VERSION="v1.28" \
+  --from-literal=NODE_INSTANCE_TYPE="t3.medium" \
+  --from-literal=NODE_MIN_SIZE="1" \
+  --from-literal=NODE_MAX_SIZE="3" \
+  --from-literal=NODE_DESIRED_SIZE="2" \
+  --from-literal=VPC_CNI_VERSION="v1.16.0-eksbuild.1" \
+  --from-literal=COREDNS_VERSION="v1.10.1-eksbuild.6" \
+  --from-literal=KUBE_PROXY_VERSION="v1.28.5-eksbuild.2" \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+print_step "Saving ConfigMap to file for GitOps..."
+
 cat > "$OUTPUT_FILE" <<EOF
 apiVersion: v1
 kind: ConfigMap

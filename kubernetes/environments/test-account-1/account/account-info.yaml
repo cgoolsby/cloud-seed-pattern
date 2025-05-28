@@ -8,3 +8,4 @@ data:
   ACCOUNT_ALIAS: "test-account-1"
   ENVIRONMENT: "development"
   NAMESPACE: "aws-test-account-1"
+  REGION: "us-west-2"

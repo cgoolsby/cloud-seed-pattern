@@ -1,0 +1,32 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: flux-kustomization
+  namespace: aws-${ACCOUNT_ALIAS}
+rules:
+# Allow Flux to read ConfigMaps and Secrets in this namespace
+- apiGroups: [""]
+  resources: ["configmaps", "secrets"]
+  verbs: ["get", "list", "watch"]
+# Allow Flux to manage Kustomizations in this namespace
+- apiGroups: ["kustomize.toolkit.fluxcd.io"]
+  resources: ["kustomizations"]
+  verbs: ["*"]
+# Allow Flux to create cluster resources in other namespaces
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "patch", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: flux-kustomization
+  namespace: aws-${ACCOUNT_ALIAS}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: flux-kustomization
+subjects:
+- kind: ServiceAccount
+  name: kustomize-controller
+  namespace: flux-system

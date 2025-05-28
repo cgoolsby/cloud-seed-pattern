@@ -5,3 +5,4 @@ namespace: aws-test-account-1
 
 resources:
   - vpc.yaml
+  - main-networking-values.yaml
