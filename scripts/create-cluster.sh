@@ -38,6 +38,7 @@ ACCOUNT_ALIAS=$1
 CLUSTER_NAME=$2
 CLUSTER_NAMESPACE=${3:-default}
 ACCOUNT_NAMESPACE="aws-$ACCOUNT_ALIAS"
+ENVIRONMENT_DIR="kubernetes/environments/$ACCOUNT_ALIAS"
 
 print_step "Creating EKS cluster: $CLUSTER_NAME"
 print_info "Account: $ACCOUNT_ALIAS"
@@ -59,14 +60,14 @@ print_info "Environment: $ACCOUNT_ENV"
 
 # Step 3: Check if VPC is ready
 print_step "Checking VPC status..."
-VPC_STATUS=$(kubectl get vpc -n $ACCOUNT_NAMESPACE main -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2>/dev/null || echo "False")
+VPC_STATUS=$(kubectl get vpc.network.example.org -n $ACCOUNT_NAMESPACE main -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2>/dev/null || echo "False")
 if [ "$VPC_STATUS" != "True" ]; then
     print_error "VPC is not ready in namespace $ACCOUNT_NAMESPACE"
-    print_warning "Please wait for VPC to be ready: kubectl get vpc -n $ACCOUNT_NAMESPACE main"
+    print_warning "Please wait for VPC to be ready: kubectl get vpc.network.example.org -n $ACCOUNT_NAMESPACE main"
     exit 1
 fi
 
-VPC_ID=$(kubectl get vpc -n $ACCOUNT_NAMESPACE main -o jsonpath='{.status.atProvider.vpcId}')
+VPC_ID=$(kubectl get vpc.network.example.org -n $ACCOUNT_NAMESPACE main -o jsonpath='{.status.vpcId}')
 print_info "Using VPC: $VPC_ID"
 
 # Step 4: Get subnet IDs
@@ -203,3 +204,8 @@ echo ""
 echo "Get kubeconfig once ready:"
 echo "  kubectl get secret -n $CLUSTER_NAMESPACE $CLUSTER_NAME-kubeconfig -o jsonpath='{.data.value}' | base64 -d > $CLUSTER_NAME.kubeconfig"
 echo "  export KUBECONFIG=\$PWD/$CLUSTER_NAME.kubeconfig"
+echo ""
+echo "To make this cluster GitOps managed:"
+echo "  1. Save the cluster manifest to: $ENVIRONMENT_DIR/clusters/$CLUSTER_NAME/"
+echo "  2. Update $ENVIRONMENT_DIR/clusters/kustomization.yaml"
+echo "  3. Commit and push the changes"
