@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Default values
 GITHUB_OWNER="cgoolsby"
-REPO_NAME="k8sHyperscalar"
+REPO_NAME="cloud-seed-pattern"
 BRANCH="main"
 FLUX_PATH="components/helmrelease/flux-system"
 GITHUB_TOKEN=${GITHUB_TOKEN:-""}

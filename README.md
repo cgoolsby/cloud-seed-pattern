@@ -1,4 +1,4 @@
-# k8sHyperscalar
+# cloud-seed-pattern
 
 A comprehensive Kubernetes Infrastructure-as-Code (IaC) platform for managing multi-cluster, multi-account AWS deployments using GitOps principles.
 
@@ -54,7 +54,7 @@ kubectl get managed -A
 ### Repository Structure
 
 ```
-k8sHyperscalar/
+cloud-seed-pattern/
 ├── terraform/
 │   ├── eks/                    # Management EKS cluster with IRSA
 │   └── accounts/               # Multi-account setup via Organizations
