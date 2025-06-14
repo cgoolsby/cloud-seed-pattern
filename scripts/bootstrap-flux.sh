@@ -5,7 +5,7 @@ set -euo pipefail
 GITHUB_OWNER="cgoolsby"
 REPO_NAME="cloud-seed-pattern"
 BRANCH="main"
-FLUX_PATH="components/helmrelease/flux-system"
+FLUX_PATH="clusters/management"
 GITHUB_TOKEN=${GITHUB_TOKEN:-""}
 
 # Help message
