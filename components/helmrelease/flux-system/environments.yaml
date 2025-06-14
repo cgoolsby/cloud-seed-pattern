@@ -5,13 +5,12 @@ metadata:
   namespace: flux-system
 spec:
   interval: 5m0s
-  path: ./kubernetes/environments
+  path: ./clusters
   prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system
   dependsOn:
-    - name: crossplane
-    - name: cluster-api
+    - name: infrastructure
   wait: true
   timeout: 30m0s
