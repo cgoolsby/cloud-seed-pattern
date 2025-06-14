@@ -10,5 +10,5 @@ resources:
   - infrastructure.yaml
   - environments.yaml
 
-commonLabels:
-  app.kubernetes.io/component: flux-system
+# Note: commonLabels removed to prevent deployment selector immutability issues
+# Labels can be added to individual resources as needed
