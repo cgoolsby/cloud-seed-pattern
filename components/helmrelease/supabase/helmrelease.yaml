@@ -7,10 +7,9 @@ spec:
   interval: 15m
   chart:
     spec:
-      chart: supabase
-      version: "0.1.3"
+      chart: ./charts/supabase
       sourceRef:
-        kind: HelmRepository
+        kind: GitRepository
         name: supabase-community
         namespace: flux-system
   values:
