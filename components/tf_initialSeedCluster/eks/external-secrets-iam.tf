@@ -9,7 +9,8 @@ data "aws_iam_policy_document" "external_secrets_assume_role" {
       values = [
         "system:serviceaccount:external-secrets:external-secrets-sa",
         "system:serviceaccount:external-secrets:external-secrets-webhook-sa",
-        "system:serviceaccount:external-secrets:external-secrets-cert-controller-sa"
+        "system:serviceaccount:external-secrets:external-secrets-cert-controller-sa",
+        "system:serviceaccount:supabase:supabase-sa"
       ]
     }
 

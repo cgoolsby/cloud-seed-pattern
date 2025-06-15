@@ -16,10 +16,6 @@ spec:
     # JWT Configuration from External Secrets
     jwt:
       existingSecret: supabase-jwt
-      existingSecretKeys:
-        anonKey: anon-key
-        serviceKey: service-key
-        secret: jwt-secret
 
     # Database Configuration
     db:
