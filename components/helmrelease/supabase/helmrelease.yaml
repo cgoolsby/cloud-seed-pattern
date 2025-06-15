@@ -60,6 +60,12 @@ spec:
         limits:
           memory: "512Mi"
           cpu: "500m"
+      auth:
+        enabled: true
+        existingSecret: supabase-dashboard
+        secretKeys:
+          usernameKey: username
+          passwordKey: password
 
     # Auth Service Configuration
     auth:
@@ -205,15 +211,6 @@ spec:
     # MinIO Configuration (using S3 instead)
     minio:
       enabled: false
-
-    # Dashboard Basic Auth
-    studio:
-      auth:
-        enabled: true
-        existingSecret: supabase-dashboard
-        secretKeys:
-          usernameKey: username
-          passwordKey: password
 
     # Global configuration
     global:
