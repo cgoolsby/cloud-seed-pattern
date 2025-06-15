@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m0s
-  path: ./logging
+  path: ./clusters/ACCOUNT_NAME/CLUSTER_NAME/logging
   prune: true
   sourceRef:
     kind: GitRepository

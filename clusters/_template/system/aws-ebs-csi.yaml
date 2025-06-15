@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m0s
-  path: ./aws-ebs-csi
+  path: ./clusters/ACCOUNT_NAME/CLUSTER_NAME/aws-ebs-csi
   prune: true
   sourceRef:
     kind: GitRepository

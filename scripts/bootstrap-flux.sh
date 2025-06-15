@@ -110,11 +110,26 @@ EOF
     echo "   Setting up base system components from template..."
     cp -r clusters/_template/system/* "$FLUX_PATH/"
     
+    # Replace placeholders in all yaml files
+    echo "   Updating paths with account and cluster names..."
+    find "$FLUX_PATH" -name "*.yaml" -type f -exec sed -i.bak \
+        -e "s|ACCOUNT_NAME|$ACCOUNT_NAME|g" \
+        -e "s|CLUSTER_NAME|$CLUSTER_NAME|g" {} \;
+    # Remove backup files
+    find "$FLUX_PATH" -name "*.yaml.bak" -type f -delete
+    
     if [ "$CLUSTER_TYPE" = "management" ]; then
         echo "   Adding management cluster components..."
         # Copy management-specific components (crossplane and cluster-api)
         cp -r clusters/_template/management/crossplane* "$FLUX_PATH/"
         cp -r clusters/_template/management/cluster-api* "$FLUX_PATH/"
+        
+        # Replace placeholders in the newly copied management files
+        find "$FLUX_PATH" -name "*.yaml" -type f -exec sed -i.bak \
+            -e "s|ACCOUNT_NAME|$ACCOUNT_NAME|g" \
+            -e "s|CLUSTER_NAME|$CLUSTER_NAME|g" {} \;
+        # Remove backup files
+        find "$FLUX_PATH" -name "*.yaml.bak" -type f -delete
         
         # Add management components to kustomization.yaml using yq
         if ! command -v yq &>/dev/null; then

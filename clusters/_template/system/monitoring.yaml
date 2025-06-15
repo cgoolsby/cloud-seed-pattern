@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m0s
-  path: ./monitoring
+  path: ./clusters/ACCOUNT_NAME/CLUSTER_NAME/monitoring
   prune: true
   sourceRef:
     kind: GitRepository
