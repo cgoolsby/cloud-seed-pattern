@@ -187,6 +187,42 @@ When creating new environments or clusters:
 - **Wildcard Trust Policy**: Handles dynamic Crossplane service account names (provider-aws-*)
 - **No Static Credentials**: All authentication uses temporary tokens via IRSA
 
+### Variable Substitution with Terraform Outputs
+Flux Kustomizations can substitute variables from ConfigMaps using `postBuild.substituteFrom`. This is essential for passing IRSA role ARNs from Terraform to Helm releases:
+
+1. **Terraform Creates ConfigMap**: The `k8s-outputs.tf` file creates a ConfigMap named `terraform-outputs` in the `flux-system` namespace containing values like:
+   ```
+   EBS_CSI_ROLE_ARN: arn:aws:iam::123456789012:role/AmazonEKS_EBS_CSI_DriverRole
+   EXTERNAL_SECRETS_ROLE_ARN: arn:aws:iam::123456789012:role/ExternalSecretsOperatorRole
+   ```
+
+2. **Flux Kustomization Configuration**: Add `postBuild.substituteFrom` to enable variable substitution:
+   ```yaml
+   apiVersion: kustomize.toolkit.fluxcd.io/v1
+   kind: Kustomization
+   metadata:
+     name: external-secrets
+     namespace: flux-system
+   spec:
+     # ... other spec fields ...
+     postBuild:
+       substituteFrom:
+         - kind: ConfigMap
+           name: terraform-outputs
+   ```
+
+3. **Use Variables in Helm Values**: Reference variables using `${VARIABLE_NAME}` syntax:
+   ```yaml
+   serviceAccount:
+     annotations:
+       eks.amazonaws.com/role-arn: "${EXTERNAL_SECRETS_ROLE_ARN}"
+   ```
+
+**Important**: Variable substitution only works in Flux Kustomizations with `postBuild.substituteFrom`. It does NOT work in:
+- Raw Kubernetes manifests applied with `kubectl`
+- Helm values without a parent Flux Kustomization
+- Resources created by other controllers
+
 ### Environment and Cluster Management
 
 #### GitOps Workflow (Recommended)
