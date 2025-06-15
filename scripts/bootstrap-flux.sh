@@ -106,14 +106,24 @@ EOF
         fi
     fi
     
+    # Always start with system template as base
+    echo "   Setting up base system components from template..."
+    cp -r clusters/_template/system/* "$FLUX_PATH/"
+    
     if [ "$CLUSTER_TYPE" = "management" ]; then
-        echo "   Setting up management cluster components from template..."
-        # Copy management template
-        cp -r clusters/_template/management/* "$FLUX_PATH/"
-    else
-        echo "   Setting up managed cluster components from template..."
-        # Copy system template for managed clusters
-        cp -r clusters/_template/system/* "$FLUX_PATH/"
+        echo "   Adding management cluster components..."
+        # Copy management-specific components (crossplane and cluster-api)
+        cp -r clusters/_template/management/crossplane* "$FLUX_PATH/"
+        cp -r clusters/_template/management/cluster-api* "$FLUX_PATH/"
+        
+        # Add management components to kustomization.yaml using yq
+        if command -v yq &>/dev/null; then
+            yq eval -i '.resources += ["crossplane.yaml", "cluster-api.yaml"]' "$FLUX_PATH/kustomization.yaml"
+        else
+            echo "   ⚠️  yq not found. Installing..."
+            brew install yq
+            yq eval -i '.resources += ["crossplane.yaml", "cluster-api.yaml"]' "$FLUX_PATH/kustomization.yaml"
+        fi
     fi
     
     echo "   Committing cluster configuration..."
