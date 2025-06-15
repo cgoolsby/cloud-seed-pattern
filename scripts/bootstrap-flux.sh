@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euo pipefail
+set -x
 
 # Default values
 GITHUB_OWNER="cgoolsby"
@@ -76,17 +77,13 @@ if [ ! -d "$FLUX_PATH" ]; then
     mkdir -p "$FLUX_PATH"
     
     if [ "$CLUSTER_TYPE" = "management" ]; then
-        echo "   Setting up management cluster components..."
-        # Create kustomization that includes management components
-        cat > "$FLUX_PATH/kustomization.yaml" <<EOF
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-
-resources:
-  - flux-system  # Flux components
-  - crossplane   # Crossplane for infrastructure provisioning
-  - cluster-api  # Cluster API for cluster management
-EOF
+        echo "   Setting up management cluster components from template..."
+        # Copy management template
+        cp -r clusters/_template/management/* "$FLUX_PATH/"
+        
+        # Add flux-system to the resources
+        sed -i.bak '/resources:/a\  - flux-system' "$FLUX_PATH/kustomization.yaml"
+        rm "$FLUX_PATH/kustomization.yaml.bak"
         
         # Create flux-system kustomization
         mkdir -p "$FLUX_PATH/flux-system"
@@ -96,48 +93,11 @@ kind: Kustomization
 
 resources:
   - ../../components/helmrelease/flux-system
-EOF
-        
-        # Create crossplane kustomization
-        mkdir -p "$FLUX_PATH/crossplane"
-        cat > "$FLUX_PATH/crossplane/kustomization.yaml" <<EOF
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-
-resources:
-  - ../../components/helmrelease/crossplane
-EOF
-        
-        # Create cluster-api kustomization
-        mkdir -p "$FLUX_PATH/cluster-api"
-        cat > "$FLUX_PATH/cluster-api/kustomization.yaml" <<EOF
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-
-resources:
-  - ../../components/helmrelease/cluster-api
 EOF
     else
-        echo "   Setting up managed cluster components..."
-        # Create kustomization for managed cluster
-        cat > "$FLUX_PATH/kustomization.yaml" <<EOF
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-
-resources:
-  - flux-system  # Flux components only
-  # Additional workload components can be added here
-EOF
-        
-        # Create flux-system kustomization
-        mkdir -p "$FLUX_PATH/flux-system"
-        cat > "$FLUX_PATH/flux-system/kustomization.yaml" <<EOF
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-
-resources:
-  - ../../components/helmrelease/flux-system
-EOF
+        echo "   Setting up managed cluster components from template..."
+        # Copy system template for managed clusters
+        cp -r clusters/_template/system/* "$FLUX_PATH/"
     fi
     
     echo "   Committing cluster configuration..."
