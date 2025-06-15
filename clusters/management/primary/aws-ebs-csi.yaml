@@ -12,3 +12,7 @@ spec:
     name: flux-system
   dependsOn:
     - name: flux-system
+  postBuild:
+    substituteFrom:
+      - kind: ConfigMap
+        name: terraform-outputs
