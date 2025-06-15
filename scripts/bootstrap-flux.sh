@@ -1,6 +1,5 @@
 #!/bin/bash
 set -euo pipefail
-set -x
 
 # Default values
 GITHUB_OWNER="cgoolsby"
@@ -111,20 +110,6 @@ EOF
         echo "   Setting up management cluster components from template..."
         # Copy management template
         cp -r clusters/_template/management/* "$FLUX_PATH/"
-        
-        # Add flux-system to the resources
-        sed -i.bak '/resources:/a\  - flux-system' "$FLUX_PATH/kustomization.yaml"
-        rm "$FLUX_PATH/kustomization.yaml.bak"
-        
-        # Create flux-system kustomization
-        mkdir -p "$FLUX_PATH/flux-system"
-        cat > "$FLUX_PATH/flux-system/kustomization.yaml" <<EOF
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-
-resources:
-  - ../../../components/helmrelease/flux-system
-EOF
     else
         echo "   Setting up managed cluster components from template..."
         # Copy system template for managed clusters
