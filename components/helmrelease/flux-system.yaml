@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m
-  path: ./kubernetes/base/flux-system
+  path: ./components/helmrelease/flux-system
   prune: true
   sourceRef:
     kind: GitRepository

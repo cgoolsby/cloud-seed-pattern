@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 1m
-  path: ./kubernetes/base/monitoring
+  path: ./components/helmrelease/monitoring
   prune: true
   sourceRef:
     kind: GitRepository

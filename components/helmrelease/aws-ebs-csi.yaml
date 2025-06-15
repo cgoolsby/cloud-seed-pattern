@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m
-  path: ./kubernetes/base/aws-ebs-csi
+  path: ./components/helmrelease/aws-ebs-csi
   prune: true
   sourceRef:
     kind: GitRepository

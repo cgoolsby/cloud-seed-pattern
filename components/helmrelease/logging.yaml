@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 1m
-  path: ./kubernetes/base/logging
+  path: ./components/helmrelease/logging
   prune: true
   sourceRef:
     kind: GitRepository

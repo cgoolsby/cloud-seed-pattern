@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 5m0s
-  path: ./kubernetes/accounts
+  path: ./clusters  # This should point to where account-specific clusters are defined
   prune: true
   sourceRef:
     kind: GitRepository
