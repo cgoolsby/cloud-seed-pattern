@@ -5,5 +5,4 @@ namespace: aws-test-account-1
 
 resources:
   # Clusters will be added here by create-cluster.sh
-  - clusterA
   - dev-cluster
