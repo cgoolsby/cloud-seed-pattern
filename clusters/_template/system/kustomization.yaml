@@ -5,6 +5,7 @@ resources:
   # System components
   - aws-ebs-csi.yaml
   - cert-manager.yaml
+  - external-secrets.yaml
   - monitoring.yaml
   - logging.yaml
   # Note: flux-system is managed by flux bootstrap, not included here
