@@ -132,6 +132,8 @@ EOF
 fi
 
 echo "🧹 Cleaning up any existing Flux installation..."
+# Delete the flux-system kustomization if it exists to avoid path conflicts
+kubectl delete kustomization flux-system -n flux-system --ignore-not-found=true || true
 flux uninstall --keep-namespace --silent || true
 
 echo "🚀 Bootstrapping Flux for $CLUSTER_TYPE cluster: $ACCOUNT_NAME/$CLUSTER_NAME..."
