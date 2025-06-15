@@ -1,0 +1,220 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: supabase
+  namespace: supabase
+spec:
+  interval: 15m
+  chart:
+    spec:
+      chart: supabase
+      version: "0.1.3"
+      sourceRef:
+        kind: HelmRepository
+        name: supabase-community
+        namespace: flux-system
+  values:
+    # JWT Configuration from External Secrets
+    jwt:
+      existingSecret: supabase-jwt
+      existingSecretKeys:
+        anonKey: anon-key
+        serviceKey: service-key
+        secret: jwt-secret
+
+    # Database Configuration
+    db:
+      enabled: true
+      image:
+        tag: "15.1.0.147"
+      persistence:
+        enabled: true
+        size: 20Gi
+        storageClass: ebs-sc
+      auth:
+        existingSecret: supabase-db
+        secretKeys:
+          adminPasswordKey: password
+          userPasswordKey: password
+      resources:
+        requests:
+          memory: "256Mi"
+          cpu: "250m"
+        limits:
+          memory: "2Gi"
+          cpu: "2"
+
+    # Studio Configuration
+    studio:
+      enabled: true
+      replicas: 2
+      autoscaling:
+        enabled: true
+        minReplicas: 2
+        maxReplicas: 5
+        targetCPUUtilizationPercentage: 80
+      resources:
+        requests:
+          memory: "256Mi"
+          cpu: "100m"
+        limits:
+          memory: "512Mi"
+          cpu: "500m"
+
+    # Auth Service Configuration
+    auth:
+      enabled: true
+      replicas: 2
+      autoscaling:
+        enabled: true
+        minReplicas: 2
+        maxReplicas: 10
+        targetCPUUtilizationPercentage: 70
+      resources:
+        requests:
+          memory: "128Mi"
+          cpu: "100m"
+        limits:
+          memory: "512Mi"
+          cpu: "1"
+      smtp:
+        existingSecret: supabase-smtp
+
+    # REST Service Configuration
+    rest:
+      enabled: true
+      replicas: 3
+      autoscaling:
+        enabled: true
+        minReplicas: 3
+        maxReplicas: 20
+        targetCPUUtilizationPercentage: 70
+      resources:
+        requests:
+          memory: "256Mi"
+          cpu: "200m"
+        limits:
+          memory: "1Gi"
+          cpu: "2"
+
+    # Realtime Service Configuration
+    realtime:
+      enabled: true
+      replicas: 2
+      autoscaling:
+        enabled: true
+        minReplicas: 2
+        maxReplicas: 10
+        targetCPUUtilizationPercentage: 70
+      resources:
+        requests:
+          memory: "256Mi"
+          cpu: "200m"
+        limits:
+          memory: "1Gi"
+          cpu: "2"
+
+    # Storage Service Configuration
+    storage:
+      enabled: true
+      replicas: 2
+      persistence:
+        enabled: true
+        size: 50Gi
+        storageClass: ebs-sc
+      autoscaling:
+        enabled: true
+        minReplicas: 2
+        maxReplicas: 10
+        targetCPUUtilizationPercentage: 80
+      resources:
+        requests:
+          memory: "256Mi"
+          cpu: "200m"
+        limits:
+          memory: "1Gi"
+          cpu: "2"
+
+    # Kong API Gateway Configuration
+    kong:
+      enabled: true
+      replicas: 3
+      autoscaling:
+        enabled: true
+        minReplicas: 3
+        maxReplicas: 20
+        targetCPUUtilizationPercentage: 70
+      resources:
+        requests:
+          memory: "512Mi"
+          cpu: "500m"
+        limits:
+          memory: "2Gi"
+          cpu: "4"
+      ingress:
+        enabled: true
+        className: alb
+        annotations:
+          alb.ingress.kubernetes.io/scheme: internet-facing
+          alb.ingress.kubernetes.io/target-type: ip
+          alb.ingress.kubernetes.io/backend-protocol: HTTP
+          alb.ingress.kubernetes.io/healthcheck-path: /health
+          alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+          alb.ingress.kubernetes.io/ssl-redirect: '443'
+          alb.ingress.kubernetes.io/certificate-arn: "${ACM_CERTIFICATE_ARN}"
+        tls:
+          - hosts:
+              - supabase.${DOMAIN_NAME}
+        hosts:
+          - host: supabase.${DOMAIN_NAME}
+            paths:
+              - path: /
+                pathType: Prefix
+
+    # Meta Service Configuration
+    meta:
+      enabled: true
+      replicas: 2
+      resources:
+        requests:
+          memory: "128Mi"
+          cpu: "100m"
+        limits:
+          memory: "256Mi"
+          cpu: "500m"
+
+    # Functions Service Configuration
+    functions:
+      enabled: false  # Enable when needed
+      
+    # Analytics Configuration
+    analytics:
+      enabled: false  # Enable when needed with proper API keys
+
+    # Vector Configuration for logging
+    vector:
+      enabled: true
+      resources:
+        requests:
+          memory: "128Mi"
+          cpu: "100m"
+        limits:
+          memory: "256Mi"
+          cpu: "500m"
+
+    # MinIO Configuration (using S3 instead)
+    minio:
+      enabled: false
+
+    # Dashboard Basic Auth
+    studio:
+      auth:
+        enabled: true
+        existingSecret: supabase-dashboard
+        secretKeys:
+          usernameKey: username
+          passwordKey: password
+
+    # Global configuration
+    global:
+      postgresqlEnabled: true
