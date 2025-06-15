@@ -68,7 +68,7 @@ spec:
       replicas: 2
       image:
         repository: supabase/gotrue
-        tag: "v2.158.1"
+        tag: "v2.174.0"
       autoscaling:
         enabled: true
         minReplicas: 2
@@ -90,7 +90,7 @@ spec:
       replicas: 3
       image:
         repository: postgrest/postgrest
-        tag: "v12.2.3"
+        tag: "v12.2.12"
       autoscaling:
         enabled: true
         minReplicas: 3
@@ -110,7 +110,7 @@ spec:
       replicas: 2
       image:
         repository: supabase/realtime
-        tag: "v2.33.71"
+        tag: "v2.34.47"
       autoscaling:
         enabled: true
         minReplicas: 2
@@ -130,7 +130,7 @@ spec:
       replicas: 2
       image:
         repository: supabase/storage-api
-        tag: "v1.12.21"
+        tag: "v1.23.0"
       persistence:
         enabled: true
         size: 50Gi
@@ -190,7 +190,7 @@ spec:
       replicas: 2
       image:
         repository: supabase/postgres-meta
-        tag: "v0.83.2"
+        tag: "v0.89.3"
       resources:
         requests:
           memory: "128Mi"
@@ -212,7 +212,7 @@ spec:
       enabled: true
       image:
         repository: timberio/vector
-        tag: "0.39.0-alpine"
+        tag: "0.28.1-alpine"
       resources:
         requests:
           memory: "128Mi"
