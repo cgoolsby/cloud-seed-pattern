@@ -11,7 +11,7 @@ This is a Kubernetes Infrastructure-as-Code (IaC) repository for managing multi-
 ### Initial Setup
 ```bash
 # 1. Bootstrap management EKS cluster with IRSA
-cd terraform/eks
+cd components/tf_initialSeedCluster
 terraform init
 terraform apply
 
@@ -30,7 +30,7 @@ kubectl get pods -n crossplane-system
 ### Multi-Account Setup
 ```bash
 # Create additional AWS accounts for environments
-cd terraform/accounts
+cd components/tf_accounts
 terraform init
 cp accounts.example.tfvars accounts.tfvars
 # Edit accounts.tfvars with your account details
@@ -149,13 +149,16 @@ pre-commit run
 ## Architecture
 
 ### Directory Structure
-- **terraform/eks/**: Terraform code for bootstrapping the management EKS cluster with IRSA
-- **terraform/accounts/**: Terraform module for creating AWS accounts and ConfigMaps
-- **kubernetes/base/**: Core platform components (Flux, Crossplane, Cluster API)
-- **kubernetes/environments/**: Complete environments grouped by account
-  - Each account directory contains: account/, networking/, clusters/, services/
-  - Everything for an account is in one place for easy management
-- **kubernetes/infrastructure/**: Shared infrastructure resources (deprecated, use environments/)
+- **components/**: Reusable modules and base configurations
+  - **tf_initialSeedCluster/**: Terraform for bootstrapping management EKS cluster with IRSA
+  - **tf_accounts/**: Terraform module for creating AWS accounts and ConfigMaps
+  - **helmrelease/**: Helm-based deployments (EBS CSI, cert-manager, monitoring, logging)
+  - **kustomizations/**: Reusable Kustomize bases for accounts, clusters, networking
+- **clusters/**: Complete cluster configurations
+  - **_template/**: Template structure for new clusters
+  - **management/**: Management cluster configuration
+  - **<account-name>/**: Workload cluster configurations
+- **scripts/**: Automation scripts for common operations
 
 ### Key Components
 1. **Flux CD**: Watches this Git repository and applies changes to the cluster
@@ -165,7 +168,7 @@ pre-commit run
 5. **Kustomize**: Used throughout for configuration management
 
 ### Multi-Account Workflow
-1. **Create Account**: Add to `terraform/accounts/accounts.tfvars` and run `terraform apply`
+1. **Create Account**: Add to `components/tf_accounts/accounts.tfvars` and run `terraform apply`
 2. **Auto-Generated ConfigMaps**: Terraform creates ConfigMaps with account details in crossplane-system namespace
 3. **ProviderConfig**: Reference ConfigMaps to create ProviderConfigs for cross-account access
 4. **Resource Provisioning**: Use account alias in Crossplane resources (e.g., `accountName: dev-account`)
@@ -173,9 +176,9 @@ pre-commit run
 ### Resource Creation Pattern
 When creating new environments or clusters:
 1. Use `./scripts/gitops-account-setup.sh <account-alias>` to create a new environment
-2. For clusters, use `./scripts/create-cluster.sh <account-alias> <cluster-name>`
-3. Templates are in `environments/_template/`
-4. All resources for an account are grouped in `environments/<account-name>/`
+2. For clusters, use `./scripts/gitops-create-cluster.sh <account-alias> <cluster-name>`
+3. Templates are in `clusters/_template/`
+4. All resources for an account are grouped in `clusters/<account-name>/`
 5. Commit and push - Flux will automatically apply
 
 ### IRSA Authentication Setup
@@ -250,7 +253,8 @@ kubectl describe providerconfig default -n crossplane-system
 ## Important Notes
 - Default cluster name: `fullStack-cluster`
 - Default region: `us-east-1`
-- Flux path in repo: `kubernetes/base`
+- Flux monitors the entire repository except for Terraform directories
 - All Kubernetes resources are managed declaratively - avoid kubectl apply directly
 - Monitor reconciliation status with `flux events --watch` when making changes
 - Account deletion via Terraform requires manual steps due to AWS Organizations constraints
+- To enable pre-commit hooks, rename `.pre-commit-config.yaml.bak` to `.pre-commit-config.yaml`
