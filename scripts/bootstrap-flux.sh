@@ -117,13 +117,12 @@ EOF
         cp -r clusters/_template/management/cluster-api* "$FLUX_PATH/"
         
         # Add management components to kustomization.yaml using yq
-        if command -v yq &>/dev/null; then
-            yq eval -i '.resources += ["crossplane.yaml", "cluster-api.yaml"]' "$FLUX_PATH/kustomization.yaml"
-        else
-            echo "   ⚠️  yq not found. Installing..."
-            brew install yq
-            yq eval -i '.resources += ["crossplane.yaml", "cluster-api.yaml"]' "$FLUX_PATH/kustomization.yaml"
+        if ! command -v yq &>/dev/null; then
+            echo "Error: yq is required for management clusters but not found in PATH"
+            echo "Please install yq: brew install yq"
+            exit 1
         fi
+        yq eval -i '.resources += ["crossplane.yaml", "cluster-api.yaml"]' "$FLUX_PATH/kustomization.yaml"
     fi
     
     echo "   Committing cluster configuration..."
