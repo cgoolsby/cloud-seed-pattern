@@ -52,6 +52,7 @@ resource "aws_secretsmanager_secret_version" "supabase_db" {
   secret_string = jsonencode({
     username = "supabase_admin"
     password = random_password.supabase_db_password.result
+    password_encoded = urlencode(random_password.supabase_db_password.result)
     host     = "supabase-db.supabase.svc.cluster.local"
     port     = "5432"
     database = "postgres"

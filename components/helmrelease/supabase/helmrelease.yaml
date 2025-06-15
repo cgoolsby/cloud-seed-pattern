@@ -176,6 +176,9 @@ spec:
     meta:
       enabled: true
       replicas: 2
+      image:
+        repository: supabase/postgres-meta
+        tag: "v0.83.2"
       resources:
         requests:
           memory: "128Mi"
@@ -195,6 +198,9 @@ spec:
     # Vector Configuration for logging
     vector:
       enabled: true
+      image:
+        repository: timberio/vector
+        tag: "0.39.0-alpine"
       resources:
         requests:
           memory: "128Mi"
