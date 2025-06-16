@@ -1,6 +1,6 @@
 # Create a test secret in AWS Secrets Manager
 resource "aws_secretsmanager_secret" "test_secret" {
-  name = "test/demo-secret"
+  name = "test/demo-secret-${local.secret_suffix}"
   description = "Test secret for External Secrets Operator"
   
   # Prevent accidental deletion
@@ -26,4 +26,10 @@ resource "random_string" "secret_suffix" {
 output "test_secret_arn" {
   description = "ARN of the test secret"
   value       = aws_secretsmanager_secret.test_secret.arn
+}
+
+# Output the secret name for External Secrets
+output "test_secret_name" {
+  description = "Name of the test secret"
+  value       = aws_secretsmanager_secret.test_secret.name
 }

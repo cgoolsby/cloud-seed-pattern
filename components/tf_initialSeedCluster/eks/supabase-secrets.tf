@@ -26,7 +26,7 @@ resource "random_password" "supabase_dashboard_password" {
 
 # Create Supabase JWT secrets
 resource "aws_secretsmanager_secret" "supabase_jwt" {
-  name = "supabase/jwt-secrets"
+  name = "supabase/jwt-secrets-${local.secret_suffix}"
   description = "Supabase JWT secrets for authentication"
   recovery_window_in_days = 7
 }
@@ -42,7 +42,7 @@ resource "aws_secretsmanager_secret_version" "supabase_jwt" {
 
 # Create Supabase database credentials
 resource "aws_secretsmanager_secret" "supabase_db" {
-  name = "supabase/database-credentials"
+  name = "supabase/database-credentials-${local.secret_suffix}"
   description = "Supabase PostgreSQL database credentials"
   recovery_window_in_days = 7
 }
@@ -61,7 +61,7 @@ resource "aws_secretsmanager_secret_version" "supabase_db" {
 
 # Create Supabase SMTP credentials (placeholder - update with real SMTP)
 resource "aws_secretsmanager_secret" "supabase_smtp" {
-  name = "supabase/smtp-credentials"
+  name = "supabase/smtp-credentials-${local.secret_suffix}"
   description = "Supabase SMTP credentials for email services"
   recovery_window_in_days = 7
 }
@@ -79,7 +79,7 @@ resource "aws_secretsmanager_secret_version" "supabase_smtp" {
 
 # Create Supabase Studio dashboard credentials
 resource "aws_secretsmanager_secret" "supabase_dashboard" {
-  name = "supabase/dashboard-credentials"
+  name = "supabase/dashboard-credentials-${local.secret_suffix}"
   description = "Supabase Studio dashboard authentication"
   recovery_window_in_days = 7
 }
@@ -111,4 +111,25 @@ output "supabase_smtp_secret_arn" {
 output "supabase_dashboard_secret_arn" {
   description = "ARN of Supabase dashboard credentials"
   value       = aws_secretsmanager_secret.supabase_dashboard.arn
+}
+
+# Output the secret names for External Secrets
+output "supabase_jwt_secret_name" {
+  description = "Name of Supabase JWT secrets"
+  value       = aws_secretsmanager_secret.supabase_jwt.name
+}
+
+output "supabase_db_secret_name" {
+  description = "Name of Supabase database credentials"
+  value       = aws_secretsmanager_secret.supabase_db.name
+}
+
+output "supabase_smtp_secret_name" {
+  description = "Name of Supabase SMTP credentials"
+  value       = aws_secretsmanager_secret.supabase_smtp.name
+}
+
+output "supabase_dashboard_secret_name" {
+  description = "Name of Supabase dashboard credentials"
+  value       = aws_secretsmanager_secret.supabase_dashboard.name
 }
