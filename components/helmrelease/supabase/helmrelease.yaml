@@ -147,6 +147,10 @@ spec:
             name: supabase-env-secrets
         - configMapRef:
             name: supabase-env-config
+      environment:
+        APP_NAME: "supabase_realtime"
+        TENANT_ID: "stub"
+        REGION: "us-east-1"
 
     # Storage Service Configuration
     storage:
@@ -238,7 +242,7 @@ spec:
 
     # Vector Configuration for logging
     vector:
-      enabled: true
+      enabled: false  # Disabled due to configuration issues
       image:
         repository: timberio/vector
         tag: "0.28.1-alpine"

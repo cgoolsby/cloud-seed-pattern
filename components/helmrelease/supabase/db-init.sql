@@ -13,10 +13,13 @@ DO $$ BEGIN
     CREATE ROLE service_role NOLOGIN NOINHERIT BYPASSRLS;
   END IF;
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'supabase_auth_admin') THEN
-    CREATE ROLE supabase_auth_admin NOLOGIN NOINHERIT;
+    CREATE ROLE supabase_auth_admin LOGIN NOINHERIT;
   END IF;
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'supabase_storage_admin') THEN
-    CREATE ROLE supabase_storage_admin NOLOGIN NOINHERIT;
+    CREATE ROLE supabase_storage_admin LOGIN NOINHERIT;
+  END IF;
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'postgres') THEN
+    CREATE ROLE postgres SUPERUSER LOGIN;
   END IF;
 END $$;
 
@@ -27,11 +30,12 @@ DO $$ BEGIN
   END IF;
 END $$;
 
--- Set password for authenticator (this will use the same password as postgres user)
+-- Set password for roles (this will use the same password as postgres user)
 \set pgpass `echo "$POSTGRES_PASSWORD"`
 ALTER ROLE authenticator WITH PASSWORD :'pgpass';
 ALTER ROLE supabase_auth_admin WITH PASSWORD :'pgpass';
 ALTER ROLE supabase_storage_admin WITH PASSWORD :'pgpass';
+ALTER ROLE postgres WITH PASSWORD :'pgpass';
 
 -- Grant permissions to authenticator
 GRANT anon TO authenticator;
@@ -48,6 +52,7 @@ GRANT supabase_storage_admin TO supabase_admin;
 CREATE SCHEMA IF NOT EXISTS auth AUTHORIZATION supabase_auth_admin;
 CREATE SCHEMA IF NOT EXISTS storage AUTHORIZATION supabase_storage_admin;
 CREATE SCHEMA IF NOT EXISTS extensions;
+CREATE SCHEMA IF NOT EXISTS _realtime;
 
 -- Enable required extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA extensions;
@@ -83,6 +88,12 @@ GRANT ALL ON ALL FUNCTIONS IN SCHEMA storage TO supabase_storage_admin;
 
 -- Allow authenticated users to access storage
 GRANT USAGE ON SCHEMA storage TO authenticated;
+
+-- Grant permissions on _realtime schema
+GRANT ALL ON SCHEMA _realtime TO supabase_admin;
+
+-- Grant database permissions for storage admin
+GRANT ALL PRIVILEGES ON DATABASE postgres TO supabase_storage_admin;
 
 -- Set search path to include extensions
 ALTER DATABASE postgres SET search_path TO "$user", public, extensions;
