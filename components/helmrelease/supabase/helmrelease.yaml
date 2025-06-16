@@ -38,6 +38,7 @@ spec:
         limits:
           memory: "2Gi"
           cpu: "2"
+      initdbScriptsConfigMap: supabase-db-init
 
     # Studio Configuration
     studio:
@@ -85,9 +86,12 @@ spec:
         existingSecret: supabase-smtp
       environment:
         GOTRUE_SMTP_ADMIN_EMAIL: "noreply@${DOMAIN_NAME}"
-        GOTRUE_SMTP_HOST: "smtp.example.com"
-        GOTRUE_SMTP_PORT: "587"
         GOTRUE_SMTP_SENDER_NAME: "Supabase"
+      envFrom:
+        - secretRef:
+            name: supabase-env-secrets
+        - configMapRef:
+            name: supabase-env-config
 
     # REST Service Configuration
     rest:
@@ -108,6 +112,11 @@ spec:
         limits:
           memory: "1Gi"
           cpu: "2"
+      envFrom:
+        - secretRef:
+            name: supabase-env-secrets
+        - configMapRef:
+            name: supabase-env-config
 
     # Realtime Service Configuration
     realtime:
@@ -128,6 +137,11 @@ spec:
         limits:
           memory: "1Gi"
           cpu: "2"
+      envFrom:
+        - secretRef:
+            name: supabase-env-secrets
+        - configMapRef:
+            name: supabase-env-config
 
     # Storage Service Configuration
     storage:
@@ -152,6 +166,11 @@ spec:
         limits:
           memory: "1Gi"
           cpu: "2"
+      envFrom:
+        - secretRef:
+            name: supabase-env-secrets
+        - configMapRef:
+            name: supabase-env-config
 
     # Kong API Gateway Configuration
     kong:
@@ -225,6 +244,7 @@ spec:
         limits:
           memory: "256Mi"
           cpu: "500m"
+      existingConfigmap: vector-config
 
     # MinIO Configuration (using S3 instead)
     minio:

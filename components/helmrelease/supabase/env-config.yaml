@@ -28,6 +28,7 @@ data:
   GOTRUE_MAILER_URLPATHS_CONFIRMATION: "/auth/v1/verify"
   GOTRUE_MAILER_URLPATHS_RECOVERY: "/auth/v1/verify"
   GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: "/auth/v1/verify"
+  GOTRUE_SMTP_PORT: "587"
   
   # REST service configuration
   PGRST_DB_SCHEMAS: "public,storage,extensions"
