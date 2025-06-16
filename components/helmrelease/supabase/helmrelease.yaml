@@ -87,6 +87,8 @@ spec:
       environment:
         GOTRUE_SMTP_ADMIN_EMAIL: "noreply@${DOMAIN_NAME}"
         GOTRUE_SMTP_SENDER_NAME: "Supabase"
+        GOTRUE_SMTP_HOST: "smtp.example.com"
+        GOTRUE_SMTP_PORT: "587"
       envFrom:
         - secretRef:
             name: supabase-env-secrets
