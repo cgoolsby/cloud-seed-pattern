@@ -39,44 +39,6 @@ spec:
           memory: "2Gi"
           cpu: "2"
       initdbScriptsConfigMap: supabase-db-init
-      migrations:
-        00-create-roles.sql: |
-          -- Create required roles first
-          DO $$ BEGIN
-            IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'anon') THEN
-              CREATE ROLE anon NOLOGIN NOINHERIT;
-            END IF;
-            IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'authenticated') THEN
-              CREATE ROLE authenticated NOLOGIN NOINHERIT;
-            END IF;
-            IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'service_role') THEN
-              CREATE ROLE service_role NOLOGIN NOINHERIT BYPASSRLS;
-            END IF;
-            IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'authenticator') THEN
-              CREATE ROLE authenticator NOINHERIT LOGIN;
-            END IF;
-            IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'supabase_auth_admin') THEN
-              CREATE ROLE supabase_auth_admin NOLOGIN NOINHERIT;
-            END IF;
-            IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'supabase_storage_admin') THEN
-              CREATE ROLE supabase_storage_admin NOLOGIN NOINHERIT;
-            END IF;
-          END $$;
-          
-          -- Set authenticator password to match postgres password
-          \set pgpass `echo "$POSTGRES_PASSWORD"`
-          ALTER ROLE authenticator WITH PASSWORD :'pgpass';
-          ALTER ROLE supabase_auth_admin WITH PASSWORD :'pgpass';
-          ALTER ROLE supabase_storage_admin WITH PASSWORD :'pgpass';
-          
-          -- Grant permissions
-          GRANT anon TO authenticator;
-          GRANT authenticated TO authenticator;
-          GRANT service_role TO authenticator;
-          GRANT supabase_auth_admin TO authenticator;
-          GRANT supabase_storage_admin TO authenticator;
-          GRANT supabase_auth_admin TO supabase_admin;
-          GRANT supabase_storage_admin TO supabase_admin;
 
     # Studio Configuration
     studio:

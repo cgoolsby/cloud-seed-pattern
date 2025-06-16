@@ -28,7 +28,10 @@ DO $$ BEGIN
 END $$;
 
 -- Set password for authenticator (this will use the same password as postgres user)
-ALTER ROLE authenticator WITH PASSWORD '${POSTGRES_PASSWORD}';
+\set pgpass `echo "$POSTGRES_PASSWORD"`
+ALTER ROLE authenticator WITH PASSWORD :'pgpass';
+ALTER ROLE supabase_auth_admin WITH PASSWORD :'pgpass';
+ALTER ROLE supabase_storage_admin WITH PASSWORD :'pgpass';
 
 -- Grant permissions to authenticator
 GRANT anon TO authenticator;
@@ -36,6 +39,10 @@ GRANT authenticated TO authenticator;
 GRANT service_role TO authenticator;
 GRANT supabase_auth_admin TO authenticator;
 GRANT supabase_storage_admin TO authenticator;
+
+-- Grant admin permissions to supabase_admin
+GRANT supabase_auth_admin TO supabase_admin;
+GRANT supabase_storage_admin TO supabase_admin;
 
 -- Create schemas
 CREATE SCHEMA IF NOT EXISTS auth AUTHORIZATION supabase_auth_admin;
