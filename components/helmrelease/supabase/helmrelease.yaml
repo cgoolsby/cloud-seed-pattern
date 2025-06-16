@@ -83,6 +83,11 @@ spec:
           cpu: "1"
       smtp:
         existingSecret: supabase-smtp
+      environment:
+        GOTRUE_SMTP_ADMIN_EMAIL: "noreply@${DOMAIN_NAME}"
+        GOTRUE_SMTP_HOST: "smtp.example.com"
+        GOTRUE_SMTP_PORT: "587"
+        GOTRUE_SMTP_SENDER_NAME: "Supabase"
 
     # REST Service Configuration
     rest:

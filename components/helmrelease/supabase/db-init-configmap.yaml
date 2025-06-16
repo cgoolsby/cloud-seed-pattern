@@ -8,13 +8,34 @@ data:
     -- Supabase Database Initialization Script
     -- This script sets up the required roles and permissions for Supabase
 
-    -- Create required roles
-    CREATE ROLE anon NOLOGIN NOINHERIT;
-    CREATE ROLE authenticated NOLOGIN NOINHERIT;
-    CREATE ROLE service_role NOLOGIN NOINHERIT BYPASSRLS;
-    CREATE ROLE authenticator NOINHERIT LOGIN PASSWORD '${POSTGRES_PASSWORD}';
-    CREATE ROLE supabase_auth_admin NOLOGIN NOINHERIT;
-    CREATE ROLE supabase_storage_admin NOLOGIN NOINHERIT;
+    -- Create required roles (if they don't exist)
+    DO $$ BEGIN
+      IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'anon') THEN
+        CREATE ROLE anon NOLOGIN NOINHERIT;
+      END IF;
+      IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'authenticated') THEN
+        CREATE ROLE authenticated NOLOGIN NOINHERIT;
+      END IF;
+      IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'service_role') THEN
+        CREATE ROLE service_role NOLOGIN NOINHERIT BYPASSRLS;
+      END IF;
+      IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'supabase_auth_admin') THEN
+        CREATE ROLE supabase_auth_admin NOLOGIN NOINHERIT;
+      END IF;
+      IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'supabase_storage_admin') THEN
+        CREATE ROLE supabase_storage_admin NOLOGIN NOINHERIT;
+      END IF;
+    END $$;
+
+    -- Create or update authenticator role
+    DO $$ BEGIN
+      IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'authenticator') THEN
+        CREATE ROLE authenticator NOINHERIT LOGIN;
+      END IF;
+    END $$;
+
+    -- Set password for authenticator (this will use the same password as postgres user)
+    ALTER ROLE authenticator WITH PASSWORD '${POSTGRES_PASSWORD}';
 
     -- Grant permissions to authenticator
     GRANT anon TO authenticator;
