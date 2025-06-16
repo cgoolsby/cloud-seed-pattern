@@ -39,7 +39,7 @@ spec:
           memory: "2Gi"
           cpu: "2"
       initdbScriptsConfigMap: supabase-db-init
-      initdbScripts:
+      migrations:
         00-create-roles.sql: |
           -- Create required roles first
           DO $$ BEGIN
@@ -63,8 +63,11 @@ spec:
             END IF;
           END $$;
           
-          -- Set authenticator password
-          ALTER ROLE authenticator WITH PASSWORD :'POSTGRES_PASSWORD';
+          -- Set authenticator password to match postgres password
+          \set pgpass `echo "$POSTGRES_PASSWORD"`
+          ALTER ROLE authenticator WITH PASSWORD :'pgpass';
+          ALTER ROLE supabase_auth_admin WITH PASSWORD :'pgpass';
+          ALTER ROLE supabase_storage_admin WITH PASSWORD :'pgpass';
           
           -- Grant permissions
           GRANT anon TO authenticator;
@@ -72,6 +75,8 @@ spec:
           GRANT service_role TO authenticator;
           GRANT supabase_auth_admin TO authenticator;
           GRANT supabase_storage_admin TO authenticator;
+          GRANT supabase_auth_admin TO supabase_admin;
+          GRANT supabase_storage_admin TO supabase_admin;
 
     # Studio Configuration
     studio:
