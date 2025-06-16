@@ -5,4 +5,8 @@ resources:
   - helmrepository.yaml
   - secretstore.yaml
   - externalsecrets.yaml
+  - env-secrets.yaml
+  - db-init-configmap.yaml
+  - vector-config.yaml
+  - env-config.yaml
   - helmrelease.yaml

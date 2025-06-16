@@ -1,0 +1,79 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vector-config
+  namespace: supabase
+data:
+  vector.yml: |
+    # Vector Configuration for Supabase Logging
+    
+    # Sources - collect logs from various Supabase services
+    sources:
+      kong_logs:
+        type: kubernetes_logs
+        namespace_labels: ["supabase"]
+        pod_labels:
+          app.kubernetes.io/name: kong
+      
+      auth_logs:
+        type: kubernetes_logs
+        namespace_labels: ["supabase"]
+        pod_labels:
+          app.kubernetes.io/name: auth
+      
+      rest_logs:
+        type: kubernetes_logs
+        namespace_labels: ["supabase"]
+        pod_labels:
+          app.kubernetes.io/name: rest
+      
+      realtime_logs:
+        type: kubernetes_logs
+        namespace_labels: ["supabase"]
+        pod_labels:
+          app.kubernetes.io/name: realtime
+      
+      storage_logs:
+        type: kubernetes_logs
+        namespace_labels: ["supabase"]
+        pod_labels:
+          app.kubernetes.io/name: storage
+    
+    # Transforms - parse and enrich logs
+    transforms:
+      parse_json:
+        type: json_parser
+        inputs:
+          - kong_logs
+          - auth_logs
+          - rest_logs
+          - realtime_logs
+          - storage_logs
+        drop_invalid: true
+      
+      add_metadata:
+        type: add_fields
+        inputs:
+          - parse_json
+        fields:
+          environment: "production"
+          cluster: "${CLUSTER_NAME}"
+    
+    # Sinks - output logs
+    sinks:
+      # Console output for debugging
+      console:
+        type: console
+        inputs:
+          - add_metadata
+        encoding:
+          codec: json
+      
+      # File output for persistence
+      file:
+        type: file
+        inputs:
+          - add_metadata
+        path: "/var/log/supabase/{{ pod_name }}/{{ date }}.log"
+        encoding:
+          codec: json

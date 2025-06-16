@@ -1,0 +1,167 @@
+# Supabase Helm Values Override
+# This file contains the minimal required overrides for Supabase
+
+# Global configuration
+global:
+  postgresqlEnabled: true
+
+# Image overrides to use correct versions
+image:
+  auth:
+    repository: supabase/gotrue
+    tag: "v2.174.0"
+  rest:
+    repository: postgrest/postgrest
+    tag: "v12.2.12"
+  realtime:
+    repository: supabase/realtime
+    tag: "v2.34.47"
+  storage:
+    repository: supabase/storage-api
+    tag: "v1.23.0"
+  meta:
+    repository: supabase/postgres-meta
+    tag: "v0.89.3"
+  vector:
+    repository: timberio/vector
+    tag: "0.28.1-alpine"
+  imgproxy:
+    repository: darthsim/imgproxy
+    tag: "v3.8.0"
+  studio:
+    repository: supabase/studio
+    tag: "2025.06.02-sha-8f2993d"
+  kong:
+    repository: kong
+    tag: "2.8.1"
+
+# Use External Secrets
+jwt:
+  existingSecret: supabase-jwt
+
+db:
+  enabled: true
+  image:
+    tag: "15.1.0.147"
+  persistence:
+    enabled: true
+    size: 20Gi
+    storageClass: ebs-sc
+  auth:
+    existingSecret: supabase-db
+    secretKeys:
+      adminPasswordKey: password
+      userPasswordKey: password
+  postgresqlDatabase: postgres
+
+# Vector configuration mount
+vector:
+  enabled: true
+  existingConfigmap: vector-config
+
+# Database init script
+db:
+  initdbConfigMap: supabase-db-init
+
+# Environment variables from Secrets/ConfigMaps
+envFrom:
+  - secretRef:
+      name: supabase-env-secrets
+  - configMapRef:
+      name: supabase-env-config
+
+# Service configurations
+studio:
+  enabled: true
+  replicas: 2
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+  auth:
+    enabled: true
+    existingSecret: supabase-dashboard
+
+auth:
+  enabled: true
+  replicas: 2
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+  smtp:
+    existingSecret: supabase-smtp
+
+rest:
+  enabled: true
+  replicas: 3
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 20
+
+realtime:
+  enabled: true
+  replicas: 2
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+
+storage:
+  enabled: true
+  replicas: 2
+  persistence:
+    enabled: true
+    size: 50Gi
+    storageClass: ebs-sc
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+
+kong:
+  enabled: true
+  replicas: 3
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 20
+  ingress:
+    enabled: true
+    className: alb
+    annotations:
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/target-type: ip
+      alb.ingress.kubernetes.io/backend-protocol: HTTP
+      alb.ingress.kubernetes.io/healthcheck-path: /health
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+      alb.ingress.kubernetes.io/ssl-redirect: '443'
+      alb.ingress.kubernetes.io/certificate-arn: "${ACM_CERTIFICATE_ARN}"
+    tls:
+      - hosts:
+          - supabase.${DOMAIN_NAME}
+    hosts:
+      - host: supabase.${DOMAIN_NAME}
+        paths:
+          - path: /
+            pathType: Prefix
+
+meta:
+  enabled: true
+  replicas: 2
+
+imgproxy:
+  enabled: true
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: ebs-sc
+
+# Disable services we don't need yet
+functions:
+  enabled: false
+analytics:
+  enabled: false
+minio:
+  enabled: false
