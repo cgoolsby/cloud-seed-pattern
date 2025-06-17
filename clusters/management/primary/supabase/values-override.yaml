@@ -1,0 +1,24 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: supabase
+  namespace: supabase
+spec:
+  values:
+    # Kong API Gateway Configuration - No ACM certificates
+    kong:
+      ingress:
+        enabled: true
+        className: alb
+        annotations:
+          alb.ingress.kubernetes.io/scheme: internet-facing
+          alb.ingress.kubernetes.io/target-type: ip
+          alb.ingress.kubernetes.io/backend-protocol: HTTP
+          alb.ingress.kubernetes.io/healthcheck-path: /health
+          alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+        tls: []
+        hosts:
+          - host: supabase.${DOMAIN_NAME}
+            paths:
+              - path: /
+                pathType: Prefix

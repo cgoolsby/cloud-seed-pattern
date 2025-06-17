@@ -5,9 +5,13 @@ resources:
   - aws-ebs-csi.yaml
   - cert-manager.yaml
   - external-secrets.yaml
+  - aws-load-balancer-controller.yaml
   - monitoring.yaml
   - logging.yaml
   # Note: flux-system is managed by flux bootstrap, not included here
 
   - crossplane.yaml
   - cluster-api.yaml
+  
+  # Applications
+  - supabase.yaml
