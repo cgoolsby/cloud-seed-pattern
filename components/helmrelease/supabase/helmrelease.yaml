@@ -38,24 +38,57 @@ spec:
         limits:
           memory: "2Gi"
           cpu: "2"
-      initdbScriptsConfigMap: supabase-db-init
+      # Remove the ConfigMap reference since we're using inline scripts
+      # initdbScriptsConfigMap: supabase-db-init
       initdbScripts:
-        00-roles.sql: |
-          -- Create required roles
-          CREATE ROLE IF NOT EXISTS anon NOLOGIN NOINHERIT;
-          CREATE ROLE IF NOT EXISTS authenticated NOLOGIN NOINHERIT;
-          CREATE ROLE IF NOT EXISTS service_role NOLOGIN NOINHERIT BYPASSRLS;
-          CREATE ROLE IF NOT EXISTS supabase_auth_admin LOGIN NOINHERIT;
-          CREATE ROLE IF NOT EXISTS supabase_storage_admin LOGIN NOINHERIT;
-          CREATE ROLE IF NOT EXISTS postgres SUPERUSER LOGIN;
-          CREATE ROLE IF NOT EXISTS authenticator NOINHERIT LOGIN;
+        00-initial-setup.sql: |
+          -- Create required roles with proper error handling
+          DO $$ 
+          BEGIN
+            -- Create anon role
+            IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'anon') THEN
+              CREATE ROLE anon NOLOGIN NOINHERIT;
+            END IF;
+            
+            -- Create authenticated role
+            IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'authenticated') THEN
+              CREATE ROLE authenticated NOLOGIN NOINHERIT;
+            END IF;
+            
+            -- Create service_role
+            IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'service_role') THEN
+              CREATE ROLE service_role NOLOGIN NOINHERIT BYPASSRLS;
+            END IF;
+            
+            -- Create supabase_auth_admin
+            IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'supabase_auth_admin') THEN
+              CREATE ROLE supabase_auth_admin LOGIN NOINHERIT;
+            END IF;
+            
+            -- Create supabase_storage_admin
+            IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'supabase_storage_admin') THEN
+              CREATE ROLE supabase_storage_admin LOGIN NOINHERIT;
+            END IF;
+            
+            -- Create authenticator
+            IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'authenticator') THEN
+              CREATE ROLE authenticator NOINHERIT LOGIN;
+            END IF;
+            
+            -- Create supabase_admin if doesn't exist
+            IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'supabase_admin') THEN
+              CREATE ROLE supabase_admin LOGIN CREATEDB CREATEROLE;
+            END IF;
+          END $$;
           
-          -- Grant permissions
+          -- Grant permissions to authenticator
           GRANT anon TO authenticator;
           GRANT authenticated TO authenticator;
           GRANT service_role TO authenticator;
           GRANT supabase_auth_admin TO authenticator;
           GRANT supabase_storage_admin TO authenticator;
+          
+          -- Grant admin permissions to supabase_admin
           GRANT supabase_auth_admin TO supabase_admin;
           GRANT supabase_storage_admin TO supabase_admin;
           
@@ -65,13 +98,24 @@ spec:
           
           -- Grant database permissions
           GRANT ALL PRIVILEGES ON DATABASE postgres TO supabase_storage_admin;
-        01-passwords.sql: |
-          -- Set passwords using the POSTGRES_PASSWORD environment variable
-          \set pgpass `echo "$POSTGRES_PASSWORD"`
-          ALTER ROLE authenticator WITH PASSWORD :'pgpass';
-          ALTER ROLE supabase_auth_admin WITH PASSWORD :'pgpass';
-          ALTER ROLE supabase_storage_admin WITH PASSWORD :'pgpass';
-          ALTER ROLE postgres WITH PASSWORD :'pgpass';
+          
+          -- Set passwords for all roles using the same password as postgres
+          DO $$
+          DECLARE
+            pwd text;
+          BEGIN
+            -- Get the password from environment or use a default
+            pwd := current_setting('POSTGRES_PASSWORD', true);
+            IF pwd IS NULL THEN
+              pwd := 'postgres'; -- This should be overridden by the actual password
+            END IF;
+            
+            -- Set passwords for all roles
+            EXECUTE format('ALTER ROLE authenticator WITH PASSWORD %L', pwd);
+            EXECUTE format('ALTER ROLE supabase_auth_admin WITH PASSWORD %L', pwd);
+            EXECUTE format('ALTER ROLE supabase_storage_admin WITH PASSWORD %L', pwd);
+            EXECUTE format('ALTER ROLE supabase_admin WITH PASSWORD %L', pwd);
+          END $$;
 
     # Studio Configuration
     studio:
