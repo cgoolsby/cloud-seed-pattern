@@ -8,6 +8,8 @@ spec:
   chart:
     spec:
       chart: ./charts/supabase
+      #TODO : why are we using GitRepository here instead of HelmRepository
+      # Is GitRepository pattern actually better because it sidesteps the need for a helm repository? you can just use the path to chart in git?
       sourceRef:
         kind: GitRepository
         name: supabase-community
