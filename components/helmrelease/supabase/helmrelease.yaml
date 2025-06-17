@@ -39,6 +39,39 @@ spec:
           memory: "2Gi"
           cpu: "2"
       initdbScriptsConfigMap: supabase-db-init
+      initdbScripts:
+        00-roles.sql: |
+          -- Create required roles
+          CREATE ROLE IF NOT EXISTS anon NOLOGIN NOINHERIT;
+          CREATE ROLE IF NOT EXISTS authenticated NOLOGIN NOINHERIT;
+          CREATE ROLE IF NOT EXISTS service_role NOLOGIN NOINHERIT BYPASSRLS;
+          CREATE ROLE IF NOT EXISTS supabase_auth_admin LOGIN NOINHERIT;
+          CREATE ROLE IF NOT EXISTS supabase_storage_admin LOGIN NOINHERIT;
+          CREATE ROLE IF NOT EXISTS postgres SUPERUSER LOGIN;
+          CREATE ROLE IF NOT EXISTS authenticator NOINHERIT LOGIN;
+          
+          -- Grant permissions
+          GRANT anon TO authenticator;
+          GRANT authenticated TO authenticator;
+          GRANT service_role TO authenticator;
+          GRANT supabase_auth_admin TO authenticator;
+          GRANT supabase_storage_admin TO authenticator;
+          GRANT supabase_auth_admin TO supabase_admin;
+          GRANT supabase_storage_admin TO supabase_admin;
+          
+          -- Create schemas
+          CREATE SCHEMA IF NOT EXISTS _realtime;
+          GRANT ALL ON SCHEMA _realtime TO supabase_admin;
+          
+          -- Grant database permissions
+          GRANT ALL PRIVILEGES ON DATABASE postgres TO supabase_storage_admin;
+        01-passwords.sql: |
+          -- Set passwords using the POSTGRES_PASSWORD environment variable
+          \set pgpass `echo "$POSTGRES_PASSWORD"`
+          ALTER ROLE authenticator WITH PASSWORD :'pgpass';
+          ALTER ROLE supabase_auth_admin WITH PASSWORD :'pgpass';
+          ALTER ROLE supabase_storage_admin WITH PASSWORD :'pgpass';
+          ALTER ROLE postgres WITH PASSWORD :'pgpass';
 
     # Studio Configuration
     studio:
