@@ -1,3 +1,6 @@
+# Work In Progress.
+
+
 # cloud-seed-pattern
 
 A comprehensive Kubernetes Infrastructure-as-Code (IaC) platform for managing multi-cluster, multi-account AWS deployments using GitOps principles.
