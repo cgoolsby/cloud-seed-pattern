@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: supabase-db-init
-  namespace: supabase
-binaryData:
-  db-init.sql: {{ .Files.Get "db-init.sql" | b64enc }}

@@ -14,4 +14,3 @@ resources:
   - cluster-api.yaml
   
   # Applications
-  - supabase.yaml

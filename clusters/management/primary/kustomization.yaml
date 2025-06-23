@@ -8,7 +8,6 @@ resources:
   - external-secrets.yaml
   - monitoring.yaml
   - logging.yaml
-  - supabase.yaml
   # Note: flux-system is managed by flux bootstrap, not included here
 
   - crossplane.yaml

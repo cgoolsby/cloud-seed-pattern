@@ -13,13 +13,6 @@ resource "kubernetes_config_map" "terraform_outputs" {
     CLUSTER_NAME                  = var.cluster_name
     CLUSTER_ENDPOINT              = module.eks.cluster_endpoint
     VPC_ID                        = module.vpc.vpc_id
-    DOMAIN_NAME                   = var.domain_name
-    ACM_CERTIFICATE_ARN           = "undefined"
-    #ACM_CERTIFICATE_ARN           = aws_acm_certificate.supabase.arn
-    SUPABASE_JWT_SECRET_NAME      = aws_secretsmanager_secret.supabase_jwt.name
-    SUPABASE_DB_SECRET_NAME       = aws_secretsmanager_secret.supabase_db.name
-    SUPABASE_SMTP_SECRET_NAME     = aws_secretsmanager_secret.supabase_smtp.name
-    SUPABASE_DASHBOARD_SECRET_NAME = aws_secretsmanager_secret.supabase_dashboard.name
   }
 
   lifecycle {
