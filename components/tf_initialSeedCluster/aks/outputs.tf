@@ -17,6 +17,7 @@ output "kube_config" {
 output "kube_config_host" {
   description = "Kubernetes API server endpoint"
   value       = azurerm_kubernetes_cluster.aks.kube_config.0.host
+  sensitive   = true
 }
 
 output "resource_group_name" {
