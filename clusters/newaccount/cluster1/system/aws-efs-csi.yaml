@@ -1,0 +1,21 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: cluster1-aws-efs-csi
+  namespace: flux-system
+spec:
+  interval: 10m
+  path: ./components/helmrelease/aws-efs-csi
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  targetNamespace: flux-system
+  dependsOn:
+    - name: cluster1
+  postBuild:
+    substituteFrom:
+      - kind: ConfigMap
+        name: terraform-outputs
+        namespace: flux-system
