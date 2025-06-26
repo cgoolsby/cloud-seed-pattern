@@ -8,6 +8,7 @@ resource "kubernetes_config_map" "terraform_outputs" {
   data = {
     AWS_ACCOUNT_ID                = data.aws_caller_identity.current.account_id
     EBS_CSI_ROLE_ARN              = aws_iam_role.ebs_csi_role.arn
+    EFS_CSI_ROLE_ARN              = aws_iam_role.efs_csi_role.arn
     EXTERNAL_SECRETS_ROLE_ARN     = aws_iam_role.external_secrets_role.arn
     ALB_CONTROLLER_ROLE_ARN       = aws_iam_role.alb_controller_role.arn
     CLUSTER_NAME                  = var.cluster_name
