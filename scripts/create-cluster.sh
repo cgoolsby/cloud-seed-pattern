@@ -5,27 +5,9 @@ set -euo pipefail
 
 # Get the directory where this script is located
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-TEMPLATE_DIR="${SCRIPT_DIR}/templates"
 
-# Color codes for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
-
-# Function to print colored output
-print_error() { echo -e "${RED}ERROR: $1${NC}" >&2; }
-print_success() { echo -e "${GREEN}SUCCESS: $1${NC}"; }
-print_info() { echo -e "${YELLOW}INFO: $1${NC}"; }
-
-# Function to substitute variables in templates
-substitute_template() {
-    local template_file=$1
-    local output_file=$2
-    
-    # Use envsubst to replace variables
-    envsubst < "${template_file}" > "${output_file}"
-}
+# Source common functions
+source "${SCRIPT_DIR}/common.sh"
 
 # Function to show usage
 usage() {
@@ -63,13 +45,13 @@ Examples:
 EOF
 }
 
-# Default values
-REGION="us-east-1"
-ENVIRONMENT="dev"
-VPC_CIDR="10.0.0.0/16"
-K8S_VERSION="1.28"
-NODE_COUNT="2"
-NODE_TYPE="t3.medium"
+# Script-specific defaults
+REGION="${DEFAULT_REGION}"
+ENVIRONMENT="${DEFAULT_ENVIRONMENT}"
+VPC_CIDR="${DEFAULT_VPC_CIDR}"
+K8S_VERSION="${DEFAULT_K8S_VERSION}"
+NODE_COUNT="${DEFAULT_NODE_COUNT}"
+NODE_TYPE="${DEFAULT_NODE_TYPE}"
 MANAGEMENT="false"
 
 # Parse command line arguments
@@ -129,41 +111,49 @@ done
 # Validate inputs
 print_info "Validating inputs..."
 
-# Check if account directory exists
-ACCOUNT_DIR="clusters/${ACCOUNT_NAME}"
-if [[ ! -d "$ACCOUNT_DIR" ]]; then
-    print_error "Account directory not found: $ACCOUNT_DIR"
+if ! validate_account_name "$ACCOUNT_NAME"; then
+    exit 1
+fi
+
+if ! validate_cluster_name "$CLUSTER_NAME"; then
+    exit 1
+fi
+
+if ! account_exists "$ACCOUNT_NAME"; then
+    print_error "Account directory not found: clusters/${ACCOUNT_NAME}"
     print_info "Please create the account structure first using the account setup script"
     exit 1
 fi
 
-# Check if cluster already exists
-CLUSTER_DIR="${ACCOUNT_DIR}/${CLUSTER_NAME}"
-if [[ -d "$CLUSTER_DIR" ]]; then
-    print_error "Cluster directory already exists: $CLUSTER_DIR"
+if cluster_exists "$ACCOUNT_NAME" "$CLUSTER_NAME"; then
+    print_error "Cluster already exists: ${ACCOUNT_NAME}/${CLUSTER_NAME}"
     exit 1
 fi
 
-# Calculate subnet CIDRs based on VPC CIDR
-IFS='.' read -ra ADDR <<< "${VPC_CIDR%/*}"
-SUBNET_PREFIX="${ADDR[0]}.${ADDR[1]}"
+# Check required tools
+if ! check_required_tools; then
+    exit 1
+fi
 
-PUBLIC_SUBNET_A_CIDR="${SUBNET_PREFIX}.1.0/24"
-PUBLIC_SUBNET_B_CIDR="${SUBNET_PREFIX}.2.0/24"
-PRIVATE_SUBNET_A_CIDR="${SUBNET_PREFIX}.10.0/24"
-PRIVATE_SUBNET_B_CIDR="${SUBNET_PREFIX}.11.0/24"
+if ! check_kubectl; then
+    exit 1
+fi
 
-# Get account namespace and ID from account info
-ACCOUNT_NAMESPACE="aws-${ACCOUNT_NAME}"
+# Calculate subnet CIDRs
+calculate_subnets "$VPC_CIDR"
 
-# Try to get account ID from existing ConfigMap
-ACCOUNT_ID=$(kubectl get configmap account-info -n "${ACCOUNT_NAMESPACE}" -o jsonpath='{.data.ACCOUNT_ID}' 2>/dev/null || echo "")
+# Get account namespace and ID
+ACCOUNT_NAMESPACE=$(get_account_namespace "$ACCOUNT_NAME")
+ACCOUNT_ID=$(get_account_id "$ACCOUNT_NAME")
 
 if [[ -z "$ACCOUNT_ID" ]]; then
     print_error "Could not retrieve account ID from ConfigMap"
     print_info "Make sure the account namespace and ConfigMap exist"
     exit 1
 fi
+
+# Set up paths
+CLUSTER_DIR="${CLUSTERS_DIR}/${ACCOUNT_NAME}/${CLUSTER_NAME}"
 
 print_success "Input validation complete"
 
