@@ -1,6 +1,6 @@
 # IAM role for Crossplane AWS Provider
 resource "aws_iam_role" "crossplane_aws_provider" {
-  name = "CrossplaneAWSProviderRole"
+  name = "${var.cluster_name}-CrossplaneAWSProviderRole"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"

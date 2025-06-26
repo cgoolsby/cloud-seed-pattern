@@ -4,7 +4,7 @@ data "http" "alb_controller_policy" {
 }
 
 resource "aws_iam_policy" "alb_controller_policy" {
-  name   = "AWSLoadBalancerControllerIAMPolicy"
+  name   = "${var.cluster_name}-AWSLoadBalancerControllerIAMPolicy"
   policy = data.http.alb_controller_policy.response_body
 }
 
@@ -35,7 +35,7 @@ data "aws_iam_policy_document" "alb_controller_assume_role" {
 
 resource "aws_iam_role" "alb_controller_role" {
   assume_role_policy = data.aws_iam_policy_document.alb_controller_assume_role.json
-  name               = "AmazonEKSLoadBalancerControllerRole"
+  name               = "${var.cluster_name}-AmazonEKSLoadBalancerControllerRole"
 }
 
 resource "aws_iam_role_policy_attachment" "alb_controller_policy_attachment" {

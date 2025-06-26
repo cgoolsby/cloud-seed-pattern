@@ -18,11 +18,11 @@ data "aws_iam_policy_document" "ebs_csi_assume_role" {
 
 resource "aws_iam_role" "ebs_csi_role" {
   assume_role_policy = data.aws_iam_policy_document.ebs_csi_assume_role.json
-  name               = "AmazonEKS_EBS_CSI_DriverRole"
+  name               = "${var.cluster_name}-AmazonEKS_EBS_CSI_DriverRole"
 }
 
 resource "aws_iam_policy" "ebs_csi_policy" {
-  name = "AmazonEKS_EBS_CSI_Driver_Policy"
+  name = "${var.cluster_name}-AmazonEKS_EBS_CSI_Driver_Policy"
 
   policy = jsonencode({
     Version = "2012-10-17"

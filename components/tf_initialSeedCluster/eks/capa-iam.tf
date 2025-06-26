@@ -1,6 +1,6 @@
 # IAM Role for Cluster API Provider AWS (CAPA)
 resource "aws_iam_role" "capa_controller" {
-  name = "capa-controller-role"
+  name = "${var.cluster_name}-capa-controller-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -26,7 +26,7 @@ resource "aws_iam_role" "capa_controller" {
 
 # Policy for CAPA controller to manage AWS resources
 resource "aws_iam_role_policy" "capa_controller" {
-  name = "capa-controller-policy"
+  name = "${var.cluster_name}-capa-controller-policy"
   role = aws_iam_role.capa_controller.id
 
   policy = jsonencode({
