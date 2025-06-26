@@ -12,7 +12,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: elastic
-        namespace: flux-system
+        namespace: logging
   values:
     replicas: 1
     volumeClaimTemplate:

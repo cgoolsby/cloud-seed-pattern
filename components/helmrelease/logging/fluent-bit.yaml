@@ -12,7 +12,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: fluent
-        namespace: flux-system
+        namespace: logging
   values:
     config:
       inputs: |

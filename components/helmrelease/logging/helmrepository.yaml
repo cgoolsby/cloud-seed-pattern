@@ -2,7 +2,7 @@ apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
   name: elastic
-  namespace: flux-system
+  namespace: logging
 spec:
   interval: 1h
   url: https://helm.elastic.co
@@ -11,7 +11,7 @@ apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
   name: fluent
-  namespace: flux-system
+  namespace: logging
 spec:
   interval: 1h
   url: https://fluent.github.io/helm-charts
