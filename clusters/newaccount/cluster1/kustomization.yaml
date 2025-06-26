@@ -13,4 +13,4 @@ resources:
   - cluster-api.yaml
   
   # Additional system components managed via system directory
-  - system/
+  #  - system/
