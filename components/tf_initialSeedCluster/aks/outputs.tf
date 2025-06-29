@@ -49,3 +49,44 @@ output "node_resource_group" {
   description = "Name of the auto-generated resource group for AKS nodes"
   value       = azurerm_kubernetes_cluster.aks.node_resource_group
 }
+
+# Workload Identity outputs
+output "oidc_issuer_url" {
+  description = "OIDC issuer URL for workload identity"
+  value       = azurerm_kubernetes_cluster.aks.oidc_issuer_url
+}
+
+output "crossplane_identity_client_id" {
+  description = "Client ID of the Crossplane managed identity"
+  value       = azurerm_user_assigned_identity.crossplane.client_id
+}
+
+output "azure_disk_csi_identity_client_id" {
+  description = "Client ID of the Azure Disk CSI managed identity"
+  value       = azurerm_user_assigned_identity.azure_disk_csi.client_id
+}
+
+output "azure_file_csi_identity_client_id" {
+  description = "Client ID of the Azure File CSI managed identity"
+  value       = azurerm_user_assigned_identity.azure_file_csi.client_id
+}
+
+output "external_secrets_identity_client_id" {
+  description = "Client ID of the External Secrets managed identity"
+  value       = azurerm_user_assigned_identity.external_secrets.client_id
+}
+
+output "capz_identity_client_id" {
+  description = "Client ID of the CAPZ managed identity"
+  value       = azurerm_user_assigned_identity.capz.client_id
+}
+
+output "key_vault_name" {
+  description = "Name of the Key Vault"
+  value       = azurerm_key_vault.main.name
+}
+
+output "key_vault_uri" {
+  description = "URI of the Key Vault"
+  value       = azurerm_key_vault.main.vault_uri
+}
