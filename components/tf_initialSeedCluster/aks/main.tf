@@ -45,6 +45,10 @@ resource "azurerm_kubernetes_cluster" "aks" {
   dns_prefix          = var.cluster_name
   kubernetes_version  = var.kubernetes_version
 
+  # Enable workload identity and OIDC for pod authentication
+  oidc_issuer_enabled       = true
+  workload_identity_enabled = true
+
   default_node_pool {
     name       = "default"
     node_count = var.node_count
