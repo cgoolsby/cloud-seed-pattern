@@ -1,0 +1,16 @@
+apiVersion: s3.aws.upbound.io/v1beta1
+kind: Bucket
+metadata:
+  name: test-crossplane-aws-bucket
+  namespace: default
+  annotations:
+    crossplane.io/test: "true"
+spec:
+  forProvider:
+    region: us-east-1
+    tags:
+      Environment: test
+      Purpose: crossplane-validation
+      ManagedBy: crossplane
+  providerConfigRef:
+    name: default

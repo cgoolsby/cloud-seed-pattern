@@ -1,0 +1,16 @@
+apiVersion: azure.upbound.io/v1beta1
+kind: ResourceGroup
+metadata:
+  name: test-crossplane-azure-rg
+  namespace: default
+  annotations:
+    crossplane.io/test: "true"
+spec:
+  forProvider:
+    location: eastus
+    tags:
+      Environment: test
+      Purpose: crossplane-validation
+      ManagedBy: crossplane
+  providerConfigRef:
+    name: default
