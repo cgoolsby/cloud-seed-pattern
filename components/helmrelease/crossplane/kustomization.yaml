@@ -8,6 +8,7 @@ resources:
   - providers/
   - compositions/
   - aws-iam.yaml
+  - azure-workload-identity.yaml
   - configurations/
 
 namespace: crossplane-system

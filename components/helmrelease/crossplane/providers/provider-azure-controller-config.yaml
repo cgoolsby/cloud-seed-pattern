@@ -1,0 +1,30 @@
+apiVersion: pkg.crossplane.io/v1alpha1
+kind: ControllerConfig
+metadata:
+  name: provider-azure-controller-config
+  labels:
+    app: crossplane-provider-azure
+spec:
+  podSecurityContext:
+    runAsUser: 2000
+    runAsGroup: 2000
+    fsGroup: 2000
+  args:
+    - --debug
+  env:
+    - name: AZURE_SDK_GO_LOGGING
+      value: "all"
+  serviceAccountName: provider-azure
+  metadata:
+    labels:
+      azure.workload.identity/use: "true"
+    annotations:
+      azure.workload.identity/client-id: "${CROSSPLANE_CLIENT_ID}"
+      azure.workload.identity/tenant-id: "${AZURE_TENANT_ID}"
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi

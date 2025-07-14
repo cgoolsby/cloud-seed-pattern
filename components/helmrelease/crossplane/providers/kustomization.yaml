@@ -4,5 +4,8 @@ kind: Kustomization
 resources:
   - provider-aws.yaml
   - provider-aws-config.yaml
+  - provider-azure.yaml
+  - provider-azure-controller-config.yaml
+  - provider-azure-config.yaml
   - provider-helm.yaml
   - provider-kubernetes.yaml
