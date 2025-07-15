@@ -1,0 +1,19 @@
+apiVersion: storage.azure.upbound.io/v1beta1
+kind: Account
+metadata:
+  name: testcrossplaneazure001
+  namespace: default
+  annotations:
+    crossplane.io/test: "true"
+spec:
+  forProvider:
+    resourceGroupNameRef:
+      name: test-crossplane-azure-rg
+    location: eastus
+    accountTier: Standard
+    accountReplicationType: LRS
+    tags:
+      Environment: test
+      Purpose: crossplane-validation
+  providerConfigRef:
+    name: default

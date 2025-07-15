@@ -1,0 +1,11 @@
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-azure
+spec:
+  package: xpkg.upbound.io/upbound/provider-azure:v0.42.0
+  controllerConfigRef:
+    name: provider-azure-controller-config
+  revisionHistoryLimit: 3
+  revisionActivationPolicy: Automatic
+  packagePullPolicy: IfNotPresent
