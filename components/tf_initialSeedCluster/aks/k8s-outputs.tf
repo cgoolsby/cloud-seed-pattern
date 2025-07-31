@@ -37,6 +37,6 @@ resource "kubernetes_config_map" "terraform_outputs" {
 
   depends_on = [
     azurerm_kubernetes_cluster.aks,
-    kubernetes_namespace.flux_system
+    null_resource.create_flux_ns
   ]
 }
